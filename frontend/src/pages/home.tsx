@@ -11,7 +11,7 @@ export default function DocsPage() {
         <div className="inline-block max-w-lg text-center justify-center">
           <h1 className={title()}>ChemEquip Visualizer</h1>
           <p>Analyse your data directly and seemlessly</p>
-          <Loginform />
+          
         </div>
       </section>
     </DefaultLayout>

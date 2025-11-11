@@ -6,7 +6,7 @@ import DashboardPage from "@/pages/dashboard";
 
 function App() {
   return (
-    <Routes>
+    <Routes> 
       <Route element={<LoginPage />} path="/login"  />
       <Route element={<HomePage />} path="/" />
       <Route element={<DashboardPage />} path="/dashboard"  />
