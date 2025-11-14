@@ -20,8 +20,11 @@ export default function AuthForm({ route, method }) {
 
     const data = Object.fromEntries(new FormData(e.currentTarget));
 
+    // Determine the correct route based on method
+    const apiRoute = method === "register" ? "/api/user/register/" : "/api/token/";
+
     try {
-      const res = await api.post(route, data);
+      const res = await api.post(apiRoute, data);
 
       if (method === "login") {
         localStorage.setItem(ACCESS_TOKEN, res.data.access);
@@ -32,15 +35,34 @@ export default function AuthForm({ route, method }) {
       }
 
       setAction("Success");
-    } catch {
-      setAction("Error: Invalid Credentials");
+    } catch (error) {
+      // Backend responded but with error status
+      if (error.response) {
+        if (error.response.status === 401) {
+          setAction("Invalid username or password.");
+        } else if (error.response.status === 400) {
+          setAction("Invalid input data.");
+        } else if (error.response.status >= 500) {
+          setAction("Server error. Please try again later.");
+        } else {
+          setAction("Request failed. Please try again.");
+        }
+
+        // No response (server down)
+      } else if (error.request) {
+        setAction("Cannot reach server. Please check your connection.");
+
+        // Unknown error
+      } else {
+        setAction("Unexpected error occurred.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen p-4">
+    <div className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
       <Form
         className="w-full max-w-sm flex flex-col gap-4 p-6 rounded-2xl shadow-lg"
         onSubmit={handleSubmit}
@@ -51,7 +73,9 @@ export default function AuthForm({ route, method }) {
           isRequired
           label="Username"
           name="username"
-          placeholder="Enter your username"
+          placeholder={
+            title === "Login" ? "Enter your new username" : undefined
+          }
           type="text"
         />
 
@@ -59,7 +83,9 @@ export default function AuthForm({ route, method }) {
           isRequired
           label="Password"
           name="password"
-          placeholder="Enter your password"
+          placeholder={
+            title === "Register" ? "Enter your new password" : undefined
+          }
           type="password"
         />
 

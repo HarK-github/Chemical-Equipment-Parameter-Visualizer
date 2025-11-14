@@ -11,6 +11,14 @@ import Login from "@/pages/login";
 function App() {
   return (
     <DefaultLayout>
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          background:
+            "radial-gradient(125% 125% at 50% 10%, #000000 40%, #2b092b 100%)",
+        }}
+      />
+
       <Routes>
         <Route element={<Login />} path="/login" />
 

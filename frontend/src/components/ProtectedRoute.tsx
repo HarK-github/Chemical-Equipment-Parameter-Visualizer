@@ -52,7 +52,7 @@ function ProtectedRoute({ children }) {
   };
 
   if (isAuth == null) {
-    return <div className="flex justify-center align-middle "><Spinner /></div>;
+    return <div className="absolute top-[50%] left "><Spinner /></div>;
   }
 
   return isAuth ? children : <Navigate to="/login" />;
