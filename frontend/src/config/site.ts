@@ -17,6 +17,10 @@ export const siteConfig = {
       label: "Login",
       href: "/login",
     },
+    {
+      label: "Logout",
+      href: "/logout",
+    }
   ],
   navMenuItems: [
     {
@@ -37,6 +41,6 @@ export const siteConfig = {
     },
   ],
   links: {
-    github: "https://github.com/<your-github-username>/chemical-equipment-visualizer",
+    github: "https://github.com/HarK-github/Chemical-Equipment-Parameter-Visualizer",
   },
 };

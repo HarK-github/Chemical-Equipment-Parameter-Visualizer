@@ -21,7 +21,8 @@ from api.views import (
     CreateUserView,
     CSVUploadView,
     CSVDeleteView,
-    Last5CSVListView
+    Last5CSVListView,
+    CSVFetchView
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -45,6 +46,8 @@ urlpatterns = [
     # CSV Delete
     path("api/delete-csv/<int:pk>/", CSVDeleteView.as_view(), name="delete-csv"),
 
+    # CSV Load
+    path('api/csv/<int:pk>/', CSVFetchView.as_view(), name='csv-fetch'),
     # Last 5 CSVs
     path("api/last5-csv/", Last5CSVListView.as_view(), name="last5-csv"),
 ]

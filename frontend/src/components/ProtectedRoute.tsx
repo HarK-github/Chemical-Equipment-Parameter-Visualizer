@@ -52,7 +52,7 @@ function ProtectedRoute({ children }) {
   };
 
   if (isAuth == null) {
-    return <div className="absolute top-[50%] left "><Spinner /></div>;
+    return <div className="absolute top-[50%] left-[50%] "><Spinner /></div>;
   }
 
   return isAuth ? children : <Navigate to="/login" />;
