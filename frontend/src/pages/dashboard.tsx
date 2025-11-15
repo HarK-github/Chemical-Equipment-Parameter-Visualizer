@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Tabs, Tab } from "@heroui/tabs";
 import { Divider } from "@heroui/divider";
 import { Accordion, AccordionItem } from "@heroui/accordion";
@@ -9,19 +9,25 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  getKeyValue
 } from "@heroui/table";
+import {Pagination} from "@heroui/pagination"
 import { Button } from "@heroui/button";
-
+import {addToast} from '@heroui/toast'; 
 import api from "../api";
 import { ACCESS_TOKEN } from "../constants";
-import { LineGraph, PieGraph, BarGraph ,ScatterGraph} from "../components/Charts";
+import {
+  LineGraph,
+  PieGraph,
+  BarGraph,
+  ScatterGraph,
+} from "../components/Charts";
 
 export default function Dashboard() {
   const [file, setFile] = useState(null);
   const [history, setHistory] = useState([]);
   const [selected, setSelected] = useState(null);
-
-  // Fetch last 5 CSV uploads
+  
   const loadHistory = async () => {
     try {
       const res = await api.get("/api/last5-csv/", {
@@ -39,8 +45,7 @@ export default function Dashboard() {
   useEffect(() => {
     loadHistory();
   }, []);
-
-  // Upload CSV
+ 
   const uploadCSV = async () => {
     if (!file) return alert("Select a file first.");
 
@@ -58,14 +63,14 @@ export default function Dashboard() {
       });
 
       setSelected(res.data);
+      addToast({title:"CSV uploaded! Check the Analysis tab.",color:"success"});
       loadHistory();
     } catch (err) {
       console.log(err);
-      alert("Upload failed");
+      alert("Upload failed/Duplicate file");
     }
   };
-
-  // Load CSV for analysis
+ 
   const loadCSV = async (id) => {
     try {
       const res = await api.get(`/api/csv/${id}/`, {
@@ -81,7 +86,6 @@ export default function Dashboard() {
     }
   };
 
-  // Delete CSV
   const deleteCSV = async (id) => {
     try {
       await api.delete(`/api/delete-csv/${id}/`, {
@@ -98,33 +102,60 @@ export default function Dashboard() {
 
   return (
     <section className="flex flex-col items-center py-4 md:py-8 px-4">
-      <h1 className="text-2xl md:text-3xl font-semibold text-center">Dashboard</h1>
+      <h1 className="text-2xl md:text-3xl font-semibold text-center">
+        Dashboard
+      </h1>
 
       <div className="w-full max-w-6xl flex flex-col justify-center align-middle">
-        <Tabs aria-label="Upload and Analysis Tabs" variant="solid" className="w-full">
-          {/* UPLOAD TAB */}
-          <Tab key="upload" title="Upload">
+        <Tabs
+          variant="underlined"
+          aria-label="Upload and Analysis Tabs"
+          className="w-full flex justify-center p-[10px]"
+        >
+          <Tab key="upload" title="Upload" >
             <div className="flex flex-col items-center gap-4 mt-6 md:mt-10 w-full">
-              <input
-                accept=".csv"
-                type="file"
-                onChange={(e) => setFile(e.target.files[0])}
-                className="w-full max-w-md"
-              />
+              
+              <label className="w-full max-w-md flex flex-col items-center px-4 py-6 bg-gray-900 rounded-2xl shadow-md tracking-wide cursor-pointer hover:shadow-xl transition duration-300 border border-gray-200">
+                <svg
+                  className="w-10 h-10 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6h.1a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
 
-              <Button onPress={uploadCSV} className="w-full max-w-md">
-                Upload CSV
+                <span className="mt-2 text-base leading-normal text-gray-500">
+                <input
+                  accept=".csv"
+                  className="w-full max-w-md"
+                  type="file"
+                  onChange={(e) => setFile(e.target.files[0])}
+                />
+                </span>
+
+                
+              </label>
+
+              <Button className="w-full max-w-md" onPress={uploadCSV}>
+                Upload CSV to Cloud
               </Button>
             </div>
 
             <Divider className="my-4 md:my-6" />
             <History history={history} onDelete={deleteCSV} onLoad={loadCSV} />
           </Tab>
-
-          {/* ANALYSIS TAB */}
           <Tab key="analysis" title="Analysis">
             {!selected ? (
-              <p className="text-center mt-6 md:mt-10">Upload a CSV to see analysis.</p>
+              <p className="text-center mt-6 md:mt-10">
+                Load a CSV to see analysis.
+              </p>
             ) : (
               <Analysis data={selected} />
             )}
@@ -138,8 +169,7 @@ export default function Dashboard() {
   );
 }
 
-function Analysis({ data }) {
-  // Equipment type data
+function Analysis({ data }) { 
   console.log(data);
   const equipmentTypes = data.equipment_type_distribution || {};
   const typeLabels = Object.keys(equipmentTypes);
@@ -148,14 +178,27 @@ function Analysis({ data }) {
   const temperatureValues = data.equipment_list.map((e) => e["Temperature"]);
   const pressureValues = data.equipment_list.map((e) => e["Pressure"]);
   const equipmentNames = data.equipment_list.map((e) => e["Equipment Name"]);
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 10;
 
-  // Average metrics for bar chart
+  const paginatedRows = useMemo(() => {
+    if (!data.equipment_list) return [];
+    const start = (page - 1) * rowsPerPage;
+
+    return data.equipment_list.slice(start, start + rowsPerPage);
+  }, [page, data.equipment_list]); 
   const metricLabels = ["Flowrate", "Pressure", "Temperature"];
   const metricValues = [
     data.average_flowrate || 0,
     data.average_pressure || 0,
     data.average_temperature || 0,
   ];
+
+  const equipmentList = data.equipment_list || [];
+
+  const totalPages = Math.ceil(equipmentList.length / rowsPerPage);
+  const columns = equipmentList[0] ? Object.keys(equipmentList[0]) : [];
+
 
   return (
     <div className="w-full max-w-6xl overflow-x-hidden">
@@ -167,13 +210,13 @@ function Analysis({ data }) {
         <Box title="Avg Temperature" value={data.average_temperature || 0} />
       </div>
 
-      <Divider className="my-4 md:my-8" />
-
-      {/* Charts Section */}
+      <Divider className="my-4 md:my-8" /> 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-        {/* Average Metrics Bar Chart */}
+ 
         <div className="p-3 md:p-4 rounded-xl shadow-md">
-          <h3 className="text-base md:text-lg font-semibold mb-2">Average Metrics</h3>
+          <h3 className="text-base md:text-lg font-semibold mb-2">
+            Average Metrics
+          </h3>
           <div className="h-64 md:h-80">
             <BarGraph
               dataPoints={metricValues}
@@ -192,7 +235,9 @@ function Analysis({ data }) {
             {typeLabels.length > 0 ? (
               <PieGraph dataPoints={typeValues} labels={typeLabels} />
             ) : (
-              <p className="text-gray-500 text-sm md:text-base">No equipment type data available</p>
+              <p className="text-gray-500 text-sm md:text-base">
+                No equipment type data available
+              </p>
             )}
           </div>
         </div>
@@ -203,7 +248,9 @@ function Analysis({ data }) {
       {/* Line Graphs */}
       <div className="space-y-6 md:space-y-8">
         <div className="p-3 md:p-4 rounded-xl shadow-md">
-          <h3 className="text-base md:text-lg font-semibold mb-2">Flowrate by Equipment</h3>
+          <h3 className="text-base md:text-lg font-semibold mb-2">
+            Flowrate by Equipment
+          </h3>
           <div className="h-64 md:h-80">
             <LineGraph
               dataPoints={flowrateValues}
@@ -212,9 +259,11 @@ function Analysis({ data }) {
             />
           </div>
         </div>
-        
+
         <div className="p-3 md:p-4 rounded-xl shadow-md">
-          <h3 className="text-base md:text-lg font-semibold mb-2">Temperature by Equipment</h3>
+          <h3 className="text-base md:text-lg font-semibold mb-2">
+            Temperature by Equipment
+          </h3>
           <div className="h-64 md:h-80">
             <LineGraph
               dataPoints={temperatureValues}
@@ -224,76 +273,85 @@ function Analysis({ data }) {
           </div>
         </div>
       </div>
-
-      {/* Scatter Plots */}
+ 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-6 md:mt-8">
         <div className="p-3 md:p-4 rounded-xl shadow-md">
-          <h3 className="text-sm md:text-base font-semibold mb-2">Flowrate vs Pressure</h3>
+          <h3 className="text-sm md:text-base font-semibold mb-2">
+            Flowrate vs Pressure
+          </h3>
           <div className="h-48 md:h-64">
-            <ScatterGraph xData={flowrateValues} yData={pressureValues} xLabel="Flowrate" yLabel="Pressure" />
+            <ScatterGraph
+              xData={flowrateValues}
+              xLabel="Flowrate"
+              yData={pressureValues}
+              yLabel="Pressure"
+            />
           </div>
         </div>
         <div className="p-3 md:p-4 rounded-xl shadow-md">
-          <h3 className="text-sm md:text-base font-semibold mb-2">Flowrate vs Temperature</h3>
+          <h3 className="text-sm md:text-base font-semibold mb-2">
+            Flowrate vs Temperature
+          </h3>
           <div className="h-48 md:h-64">
-            <ScatterGraph xData={flowrateValues} yData={temperatureValues} xLabel="Flowrate" yLabel="Temperature" />
+            <ScatterGraph
+              xData={flowrateValues}
+              xLabel="Flowrate"
+              yData={temperatureValues}
+              yLabel="Temperature"
+            />
           </div>
         </div>
         <div className="p-3 md:p-4 rounded-xl shadow-md">
-          <h3 className="text-sm md:text-base font-semibold mb-2">Pressure vs Temperature</h3>
+          <h3 className="text-sm md:text-base font-semibold mb-2">
+            Pressure vs Temperature
+          </h3>
           <div className="h-48 md:h-64">
-            <ScatterGraph xData={pressureValues} yData={temperatureValues} xLabel="Pressure" yLabel="Temperature" />
+            <ScatterGraph
+              xData={pressureValues}
+              xLabel="Pressure"
+              yData={temperatureValues}
+              yLabel="Temperature"
+            />
           </div>
         </div>
       </div>
 
       <Divider className="my-4 md:my-8" />
 
-      {/* Equipment Type Table */}
-      <h2 className="text-lg md:text-xl font-semibold mb-3">Equipment Types</h2>
-      {typeLabels.length > 0 ? (
-        <div className="overflow-x-auto">
-          <Table removeWrapper aria-label="Type Distribution" className="min-w-full">
-            <TableHeader>
-              <TableColumn>Equipment Name</TableColumn>
-              <TableColumn>Count</TableColumn>
-            </TableHeader>
-            <TableBody>
-              {typeLabels.map((type, index) => (
-                <TableRow key={type}>
-                  <TableCell>{type}</TableCell>
-                  <TableCell>{typeValues[index]}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      ) : (
-        <p className="text-gray-500 text-sm md:text-base">No equipment type data available</p>
-      )}
-
-      {/* Full CSV Table */}
+     
       <h2 className="text-lg md:text-xl font-semibold mb-3 mt-6 md:mt-8">Equipment Data</h2>
-      {data.equipment_list && data.equipment_list.length > 0 ? (
+      {equipmentList.length ? (
         <div className="overflow-x-auto">
-          <Table removeWrapper aria-label="Full Equipment Data" className="min-w-full">
+          <Table
+            removeWrapper
+            aria-label="Full Equipment Data"
+            bottomContent={
+              <div className="flex w-full justify-center mt-4">
+                <Pagination
+                  isCompact
+                  showControls
+                  showShadow
+                  color="secondary"
+                  page={page}
+                  total={totalPages}
+                  onChange={setPage}
+                />
+              </div>
+            }
+            classNames={{ wrapper: "min-h-[222px]" }}
+          >
             <TableHeader>
-              {Object.keys(data.equipment_list[0]).map((key) => (
-                <TableColumn key={key}>
-                  {key.charAt(0).toUpperCase() + key.slice(1)}
-                </TableColumn>
+              {columns.map((col) => (
+                <TableColumn key={col}>{col.charAt(0).toUpperCase() + col.slice(1)}</TableColumn>
               ))}
             </TableHeader>
-            <TableBody>
-              {data.equipment_list.map((row, rowIndex) => (
-                <TableRow key={rowIndex}>
-                  {Object.keys(row).map((key) => (
-                    <TableCell key={key} className="text-xs md:text-sm">
-                      {row[key]}
-                    </TableCell>
-                  ))}
+
+            <TableBody items={paginatedRows}>
+              {(row) => (
+                <TableRow key={row["Equipment Name"] || row.id}>
+                  {(columnKey) => <TableCell>{getKeyValue(row, columnKey)}</TableCell>}
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </div>
@@ -313,29 +371,37 @@ function Box({ title, value }) {
   );
 }
 
-/* -----------------------------  
-    HISTORY LIST 
------------------------------- */
-
 function History({ history, onLoad, onDelete }) {
-  if (!history.length) return <p className="text-center py-4">No history yet.</p>;
+  if (!history.length)
+    return <p className="text-center py-4">No history yet.</p>;
 
   return (
-    <Accordion variant="bordered" className="w-full">
+    <Accordion className="w-full" variant="bordered">
       {history.map((item) => (
-        <AccordionItem key={item.id} title={item.title} className="text-sm md:text-base">
-          <p className="text-xs md:text-sm">Uploaded: {new Date(item.uploaded_at).toLocaleString()}</p>
+        <AccordionItem
+          key={item.id}
+          className="text-sm md:text-base"
+          title={item.title}
+        >
+          <p className="text-xs md:text-sm">
+            Uploaded: {new Date(item.uploaded_at).toLocaleString()}
+          </p>
 
           <div className="flex gap-2 mt-3 md:mt-4">
-            <Button color="primary" onPress={() => onLoad(item.id)} size="sm" className="flex-1 md:flex-none">
+            <Button
+              className="flex-1 md:flex-none"
+              color="primary"
+              size="sm"
+              onPress={() => onLoad(item.id)}
+            >
               Load
             </Button>
             <Button
+              className="flex-1 md:flex-none"
               color="danger"
+              size="sm"
               variant="flat"
               onPress={() => onDelete(item.id)}
-              size="sm"
-              className="flex-1 md:flex-none"
             >
               Delete
             </Button>

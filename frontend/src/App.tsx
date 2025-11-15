@@ -1,13 +1,13 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import Register from "./pages/register";
 import DefaultLayout from "./layouts/default";
+import { logout as Logout } from "./pages/logout";
 
 import HomePage from "@/pages/home";
 import DashboardPage from "@/pages/dashboard";
 import Login from "@/pages/login";
-import { logout as Logout } from "./pages/logout";
 
 function App() {
   return (
@@ -25,12 +25,7 @@ function App() {
         <Route element={<Login />} path="/login" />
 
         <Route element={<Register />} path="/register" />
-        <Route
-          element={
-              <HomePage />
-          }
-          path="/"
-        />
+        <Route element={<HomePage />} path="/" />
         <Route
           element={
             <ProtectedRoute>
@@ -42,7 +37,7 @@ function App() {
         <Route
           element={
             <ProtectedRoute>
-              <Logout/>
+              <Logout />
             </ProtectedRoute>
           }
           path="/logout"

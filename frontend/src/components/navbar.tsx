@@ -10,13 +10,16 @@ import {
 } from "@heroui/navbar";
 import { link as linkStyles } from "@heroui/theme";
 import clsx from "clsx";
+import { useSelector } from "react-redux";
 
 import { siteConfig } from "@/config/site";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { GithubIcon } from "@/components/icons";
-import { useContext } from "react"; 
+export const Navbar = () => {
+  const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
 
-export const Navbar = ({isLoggedIn}) => {  
+  console.log(isLoggedIn);
+
   return (
     <HeroUINavbar maxWidth="xl" position="sticky">
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
@@ -37,6 +40,7 @@ export const Navbar = ({isLoggedIn}) => {
             if (item.auth === "both") return true;
             if (item.auth === "public" && !isLoggedIn) return true;
             if (item.auth === "private" && isLoggedIn) return true;
+
             return false;
           })
           .map((item) => (
@@ -86,6 +90,7 @@ export const Navbar = ({isLoggedIn}) => {
               if (item.auth === "both") return true;
               if (item.auth === "public" && !isLoggedIn) return true;
               if (item.auth === "private" && isLoggedIn) return true;
+
               return false;
             })
             .map((item, index) => (

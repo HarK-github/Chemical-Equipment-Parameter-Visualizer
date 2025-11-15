@@ -4,11 +4,13 @@ import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import { useNavigate } from "react-router-dom";
 import { Link } from "@heroui/link";
-
+import { useDispatch } from "react-redux";
+import { login } from "@/store/authSlice";
 import api from "../api";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
-
 export default function AuthForm({ route, method }) {
+  const dispatch = useDispatch();
+
   const [action, setAction] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -19,8 +21,7 @@ export default function AuthForm({ route, method }) {
     setLoading(true);
 
     const data = Object.fromEntries(new FormData(e.currentTarget));
-
-    // Determine the correct route based on method
+ 
     const apiRoute = method === "register" ? "/api/user/register/" : "/api/token/";
 
     try {
@@ -29,15 +30,20 @@ export default function AuthForm({ route, method }) {
       if (method === "login") {
         localStorage.setItem(ACCESS_TOKEN, res.data.access);
         localStorage.setItem(REFRESH_TOKEN, res.data.refresh);
-        navigate("/");
+        dispatch(
+        login({
+          access: res.data.access,
+          refresh: res.data.refresh,
+        })
+      );
+        navigate("/dashboard");
       } else {
         navigate("/login");
       }
 
       setAction("Success");
-      
-    } catch (error) {
-      // Backend responded but with error status
+
+    } catch (error) { 
       if (error.response) {
         if (error.response.status === 401) {
           setAction("Invalid username or password.");

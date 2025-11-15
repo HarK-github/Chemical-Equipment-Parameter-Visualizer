@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "@heroui/pagination": "^2.2.24",
+    "@heroui/system": "^2.4.23",
+    "@heroui/theme": "^2.4.23",
+    "@reduxjs/toolkit": "^2.10.1",
+    "framer-motion": "^12.23.24",
+    "react-redux": "^9.2.0",
+    "tailwindcss": "^4.0.0"
+  }
+}

@@ -220,25 +220,80 @@ class DesktopApp(QWidget):
     # ---------------------------------------------------------
     # MATPLOTLIB CHARTS
     # ---------------------------------------------------------
-    def plot_graphs(self, data):
-        equipment = data["equipment_list"]
+    # ---------------------------------------------------------
+# MATPLOTLIB CHARTS
+# ---------------------------------------------------------
+def plot_graphs(self, data):
+    equipment = data["equipment_list"]
 
-        flow = [e["Flowrate"] for e in equipment]
-        pressure = [e["Pressure"] for e in equipment]
-        temperature = [e["Temperature"] for e in equipment]
+    if not equipment:
+        self.status_label.setText("No equipment data to plot!")
+        return
 
-        self.figure.clear()
-        ax = self.figure.add_subplot(111)
-        ax.plot(flow, label="Flowrate")
-        ax.plot(pressure, label="Pressure")
-        ax.plot(temperature, label="Temperature")
+    # Extract data
+    flow = [e["Flowrate"] for e in equipment]
+    pressure = [e["Pressure"] for e in equipment]
+    temperature = [e["Temperature"] for e in equipment]
+    names = [e["Equipment Name"] for e in equipment]
+    types = [e["Type"] for e in equipment]
 
-        ax.set_title("Equipment Parameter Trends")
-        ax.set_xlabel("Index")
-        ax.set_ylabel("Values")
-        ax.legend()
+    avg_flow = data.get("average_flowrate", 0)
+    avg_pressure = data.get("average_pressure", 0)
+    avg_temp = data.get("average_temperature", 0)
+    total_count = data.get("total_count", len(equipment))
 
-        self.canvas.draw()
+    # Count distribution by equipment type
+    type_counts = {}
+    for t in types:
+        type_counts[t] = type_counts.get(t, 0) + 1
+
+    # Clear figure
+    self.figure.clear()
+
+    # Create subplots layout
+    self.figure.subplots_adjust(hspace=0.6)
+    ax1 = self.figure.add_subplot(321)  # Avg metrics bar chart
+    ax2 = self.figure.add_subplot(322)  # Equipment type distribution pie chart
+    ax3 = self.figure.add_subplot(323)  # Flowrate line
+    ax4 = self.figure.add_subplot(324)  # Temperature line
+    ax5 = self.figure.add_subplot(325)  # Flowrate vs Pressure scatter
+    ax6 = self.figure.add_subplot(326)  # Pressure vs Temperature scatter
+
+    # ------------------ Avg Metrics Bar ------------------
+    ax1.bar(["Flowrate", "Pressure", "Temperature"], [avg_flow, avg_pressure, avg_temp], color=['skyblue','salmon','lightgreen'])
+    ax1.set_title(f"Average Metrics (Total Equipment: {total_count})")
+    ax1.set_ylabel("Values")
+
+    # ------------------ Equipment Type Distribution Pie ------------------
+    ax2.pie(list(type_counts.values()), labels=list(type_counts.keys()), autopct="%1.1f%%", startangle=90)
+    ax2.set_title("Equipment Type Distribution")
+
+    # ------------------ Flowrate Line Graph ------------------
+    ax3.plot(names, flow, marker='o', color='skyblue')
+    ax3.set_title("Flowrate by Equipment")
+    ax3.set_ylabel("Flowrate")
+    ax3.tick_params(axis='x', rotation=45)
+
+    # ------------------ Temperature Line Graph ------------------
+    ax4.plot(names, temperature, marker='o', color='lightgreen')
+    ax4.set_title("Temperature by Equipment")
+    ax4.set_ylabel("Temperature")
+    ax4.tick_params(axis='x', rotation=45)
+
+    # ------------------ Flowrate vs Pressure Scatter ------------------
+    ax5.scatter(flow, pressure, color='salmon')
+    ax5.set_xlabel("Flowrate")
+    ax5.set_ylabel("Pressure")
+    ax5.set_title("Flowrate vs Pressure")
+
+    # ------------------ Pressure vs Temperature Scatter ------------------
+    ax6.scatter(pressure, temperature, color='orange')
+    ax6.set_xlabel("Pressure")
+    ax6.set_ylabel("Temperature")
+    ax6.set_title("Pressure vs Temperature")
+
+    # Draw canvas
+    self.canvas.draw()
 
 
 # ---------------------------------------------------------
