@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Tabs, Tab } from "@heroui/tabs";
 import { Divider } from "@heroui/divider";
 import { Accordion, AccordionItem } from "@heroui/accordion";
@@ -22,7 +22,7 @@ import {
   BarGraph,
   ScatterGraph,
 } from "../components/Charts";
-
+import { ExportPDFButton } from "../components/ExportPdf";
 export default function Dashboard() {
   const [file, setFile] = useState(null);
   const [history, setHistory] = useState([]);
@@ -199,6 +199,15 @@ function Analysis({ data }) {
   const totalPages = Math.ceil(equipmentList.length / rowsPerPage);
   const columns = equipmentList[0] ? Object.keys(equipmentList[0]) : [];
 
+  const chartRefs = {
+    avgMetrics: useRef(null),
+    pieChart: useRef(null),
+    flowrateChart: useRef(null),
+    temperatureChart: useRef(null),
+    flowratePressure: useRef(null),
+    flowrateTemperature: useRef(null),
+    pressureTemperature: useRef(null),
+  };
 
   return (
     <div className="w-full max-w-6xl overflow-x-hidden">
@@ -209,11 +218,13 @@ function Analysis({ data }) {
         <Box title="Avg Pressure" value={data.average_pressure || 0} />
         <Box title="Avg Temperature" value={data.average_temperature || 0} />
       </div>
-
+      <div className="flex justify-end mb-4">
+        <ExportPDFButton data={data} chartRefs={chartRefs} />
+      </div>
       <Divider className="my-4 md:my-8" /> 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
  
-        <div className="p-3 md:p-4 rounded-xl shadow-md">
+        <div ref={chartRefs.avgMetrics} className="p-3 md:p-4 rounded-xl shadow-md">
           <h3 className="text-base md:text-lg font-semibold mb-2">
             Average Metrics
           </h3>
@@ -227,7 +238,7 @@ function Analysis({ data }) {
         </div>
 
         {/* Equipment Type Distribution */}
-        <div className="p-3 md:p-4 rounded-xl shadow-md">
+        <div ref={chartRefs.avgMetrics} className="p-3 md:p-4 rounded-xl shadow-md">
           <h3 className="text-base md:text-lg font-semibold mb-2">
             Equipment Type Distribution
           </h3>
@@ -246,7 +257,7 @@ function Analysis({ data }) {
       <Divider className="my-4 md:my-8" />
 
       {/* Line Graphs */}
-      <div className="space-y-6 md:space-y-8">
+      <div  ref={chartRefs.avgMetrics} className="space-y-6 md:space-y-8">
         <div className="p-3 md:p-4 rounded-xl shadow-md">
           <h3 className="text-base md:text-lg font-semibold mb-2">
             Flowrate by Equipment
@@ -260,7 +271,7 @@ function Analysis({ data }) {
           </div>
         </div>
 
-        <div className="p-3 md:p-4 rounded-xl shadow-md">
+        <div ref={chartRefs.flowrateChart} className="p-3 md:p-4 rounded-xl shadow-md">
           <h3 className="text-base md:text-lg font-semibold mb-2">
             Temperature by Equipment
           </h3>
@@ -274,7 +285,7 @@ function Analysis({ data }) {
         </div>
       </div>
  
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-6 md:mt-8">
+      <div ref={chartRefs.flowratePressure} className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-6 md:mt-8">
         <div className="p-3 md:p-4 rounded-xl shadow-md">
           <h3 className="text-sm md:text-base font-semibold mb-2">
             Flowrate vs Pressure
@@ -288,7 +299,7 @@ function Analysis({ data }) {
             />
           </div>
         </div>
-        <div className="p-3 md:p-4 rounded-xl shadow-md">
+        <div ref={chartRefs.flowrateTemperature} className="p-3 md:p-4 rounded-xl shadow-md">
           <h3 className="text-sm md:text-base font-semibold mb-2">
             Flowrate vs Temperature
           </h3>
@@ -301,7 +312,7 @@ function Analysis({ data }) {
             />
           </div>
         </div>
-        <div className="p-3 md:p-4 rounded-xl shadow-md">
+        <div ref={chartRefs.pressureTemperature} className="p-3 md:p-4 rounded-xl shadow-md">
           <h3 className="text-sm md:text-base font-semibold mb-2">
             Pressure vs Temperature
           </h3>
