@@ -35,6 +35,7 @@ export default function AuthForm({ route, method }) {
       }
 
       setAction("Success");
+      
     } catch (error) {
       // Backend responded but with error status
       if (error.response) {

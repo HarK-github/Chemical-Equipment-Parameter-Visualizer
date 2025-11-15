@@ -27,9 +27,7 @@ function App() {
         <Route element={<Register />} path="/register" />
         <Route
           element={
-            <ProtectedRoute>
               <HomePage />
-            </ProtectedRoute>
           }
           path="/"
         />
