@@ -15,10 +15,9 @@ import { useSelector } from "react-redux";
 import { siteConfig } from "@/config/site";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { GithubIcon } from "@/components/icons";
+import { RootState } from "@/store/store";
 export const Navbar = () => {
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
-
-  console.log(isLoggedIn);
 
   return (
     <HeroUINavbar maxWidth="xl" position="sticky">

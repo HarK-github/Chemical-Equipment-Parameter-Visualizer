@@ -1,7 +1,7 @@
-import { title } from "@/components/primitives";
-import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Button } from "@heroui/button";
 import { Link } from "@heroui/link";
+
+import { title } from "@/components/primitives";
 
 export default function DocsPage() {
   return (
@@ -19,40 +19,40 @@ export default function DocsPage() {
           backgroundSize: "40px 40px, 40px 40px, 100% 100%",
         }}
       />
-      
-        
+
       <div className="relative z-10 flex flex-col items-center justify-center text-center text-white max-w-lg mx-auto pt-[15vh] animate-fade-in">
         <div className="max-w-4xl mx-auto">
           <h1 className={title({ color: "violet", size: "lg" })}>
             ChemEquip Visualizer
           </h1>
           <p className="mt-6 text-xl text-gray-300 max-w-2xl mx-auto">
-            Analyze your chemical equipment data directly and seamlessly with our advanced visualization tools.
+            Analyze your chemical equipment data directly and seamlessly with
+            our advanced visualization tools.
           </p>
-           
+
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              color="primary" 
-              size="lg"
-              className="px-8 py-6 text-lg font-semibold transform hover:scale-105 transition-transform duration-300"
+            <Button
               as={Link}
+              className="px-8 py-6 text-lg font-semibold transform hover:scale-105 transition-transform duration-300"
+              color="primary"
               href="/login"
+              size="lg"
             >
               Login
             </Button>
-            <Button 
-              variant="bordered" 
-              size="lg"
-              className="px-8 py-6 text-lg font-semibold border-white text-white hover:bg-white/10 transition-all duration-300"
+            <Button
               as={Link}
+              className="px-8 py-6 text-lg font-semibold border-white text-white hover:bg-white/10 transition-all duration-300"
               href="/register"
+              size="lg"
+              variant="bordered"
             >
               Register
             </Button>
           </div>
         </div>
       </div>
- 
+
       <div className="relative z-10 py-20 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16 animate-slide-up">
@@ -60,12 +60,12 @@ export default function DocsPage() {
               Powerful Features
             </h2>
             <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-              Everything you need to visualize and analyze chemical equipment data efficiently
+              Everything you need to visualize and analyze chemical equipment
+              data efficiently
             </p>
           </div>
         </div>
       </div>
-
 
       {/* Stats Section */}
       <div className="relative z-10 py-16 px-4 animate-fade-in">
@@ -106,20 +106,21 @@ export default function DocsPage() {
             Ready to Visualize Your Chemical Equipment Data?
           </h2>
           <p className="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
-            Start using ChemEquip Visualizer to analyze and optimize chemical equipment performance.
+            Start using ChemEquip Visualizer to analyze and optimize chemical
+            equipment performance.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              color="primary" 
-              size="lg"
+            <Button
               className="px-8 py-6 text-lg font-semibold transform hover:scale-105 transition-transform duration-300"
+              color="primary"
+              size="lg"
             >
               Login
             </Button>
-            <Button 
-              variant="bordered" 
-              size="lg"
+            <Button
               className="px-8 py-6 text-lg font-semibold border-gray-600 text-white hover:bg-white/10 transition-all duration-300"
+              size="lg"
+              variant="bordered"
             >
               Register
             </Button>

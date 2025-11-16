@@ -1,28 +1,34 @@
-import { useState } from "react";
+import { useState, FormEvent } from "react";
 import { Form } from "@heroui/form";
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import { useNavigate } from "react-router-dom";
 import { Link } from "@heroui/link";
 import { useDispatch } from "react-redux";
-import { login } from "@/store/authSlice";
+
 import api from "../api";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
-export default function AuthForm({ route, method }) {
-  const dispatch = useDispatch();
 
-  const [action, setAction] = useState(null);
+import { login } from "@/store/authSlice";
+
+interface AuthFormProps {
+  route: string;
+  method: "login" | "register";
+}
+
+export default function AuthForm({ method }: AuthFormProps) {
+  const dispatch = useDispatch();
+  const [action, setAction] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const title = method === "login" ? "Login" : "Register";
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-
     const data = Object.fromEntries(new FormData(e.currentTarget));
- 
-    const apiRoute = method === "register" ? "/api/user/register/" : "/api/token/";
+    const apiRoute =
+      method === "register" ? "/api/user/register/" : "/api/token/";
 
     try {
       const res = await api.post(apiRoute, data);
@@ -31,19 +37,17 @@ export default function AuthForm({ route, method }) {
         localStorage.setItem(ACCESS_TOKEN, res.data.access);
         localStorage.setItem(REFRESH_TOKEN, res.data.refresh);
         dispatch(
-        login({
-          access: res.data.access,
-          refresh: res.data.refresh,
-        })
-      );
+          login({
+            access: res.data.access,
+            refresh: res.data.refresh,
+          }),
+        );
         navigate("/dashboard");
       } else {
         navigate("/login");
       }
-
       setAction("Success");
-
-    } catch (error) { 
+    } catch (error: any) {
       if (error.response) {
         if (error.response.status === 401) {
           setAction("Invalid username or password.");
@@ -54,11 +58,9 @@ export default function AuthForm({ route, method }) {
         } else {
           setAction("Request failed. Please try again.");
         }
-
         // No response (server down)
       } else if (error.request) {
         setAction("Cannot reach server. Please check your connection.");
-
         // Unknown error
       } else {
         setAction("Unexpected error occurred.");
@@ -75,7 +77,6 @@ export default function AuthForm({ route, method }) {
         onSubmit={handleSubmit}
       >
         <h2 className="text-2xl font-semibold text-center">{title}</h2>
-
         <Input
           isRequired
           label="Username"
@@ -85,7 +86,6 @@ export default function AuthForm({ route, method }) {
           }
           type="text"
         />
-
         <Input
           isRequired
           label="Password"
@@ -95,7 +95,6 @@ export default function AuthForm({ route, method }) {
           }
           type="password"
         />
-
         <Button
           className="w-full"
           color="primary"
@@ -104,7 +103,6 @@ export default function AuthForm({ route, method }) {
         >
           {loading ? "Processing..." : title}
         </Button>
-
         {action && (
           <p className="text-center text-sm text-gray-500">{action}</p>
         )}

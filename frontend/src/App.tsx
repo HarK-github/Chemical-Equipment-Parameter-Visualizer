@@ -3,7 +3,7 @@ import { Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Register from "./pages/register";
 import DefaultLayout from "./layouts/default";
-import { logout as Logout } from "./pages/logout";
+import { Logout } from "./pages/logout";
 
 import HomePage from "@/pages/home";
 import DashboardPage from "@/pages/dashboard";

@@ -9,11 +9,12 @@ import {
   TableBody,
   TableRow,
   TableCell,
-  getKeyValue
+  getKeyValue,
 } from "@heroui/table";
-import {Pagination} from "@heroui/pagination"
+import { Pagination } from "@heroui/pagination";
 import { Button } from "@heroui/button";
-import {addToast} from '@heroui/toast'; 
+import { addToast } from "@heroui/toast";
+
 import api from "../api";
 import { ACCESS_TOKEN } from "../constants";
 import {
@@ -33,9 +34,9 @@ interface HistoryItem {
 interface EquipmentData {
   [key: string]: any;
   "Equipment Name": string;
-  "Flowrate": number;
-  "Temperature": number;
-  "Pressure": number;
+  Flowrate: number;
+  Temperature: number;
+  Pressure: number;
 }
 
 interface SelectedData {
@@ -52,7 +53,7 @@ export default function Dashboard() {
   const [file, setFile] = useState<File | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [selected, setSelected] = useState<SelectedData | null>(null);
-  
+
   const loadHistory = async () => {
     try {
       const res = await api.get("/api/last5-csv/", {
@@ -70,7 +71,7 @@ export default function Dashboard() {
   useEffect(() => {
     loadHistory();
   }, []);
- 
+
   const uploadCSV = async () => {
     if (!file) return alert("Select a file first.");
 
@@ -88,14 +89,17 @@ export default function Dashboard() {
       });
 
       setSelected(res.data);
-      addToast({title:"CSV uploaded! Check the Analysis tab.",color:"success"});
+      addToast({
+        title: "CSV uploaded! Check the Analysis tab.",
+        color: "success",
+      });
       loadHistory();
     } catch (err) {
       console.log(err);
       alert("Upload failed/Duplicate file");
     }
   };
- 
+
   const loadCSV = async (id: number) => {
     try {
       const res = await api.get(`/api/csv/${id}/`, {
@@ -133,13 +137,12 @@ export default function Dashboard() {
 
       <div className="w-full max-w-6xl flex flex-col justify-center align-middle">
         <Tabs
-          variant="underlined"
           aria-label="Upload and Analysis Tabs"
           className="w-full flex justify-center p-[10px]"
+          variant="underlined"
         >
-          <Tab key="upload" title="Upload" >
+          <Tab key="upload" title="Upload">
             <div className="flex flex-col items-center gap-4 mt-6 md:mt-10 w-full">
-              
               <label className="w-full max-w-md flex flex-col items-center px-4 py-6 bg-gray-900 rounded-2xl shadow-md tracking-wide cursor-pointer hover:shadow-xl transition duration-300 border border-gray-200">
                 <svg
                   className="w-10 h-10 text-gray-400"
@@ -157,15 +160,13 @@ export default function Dashboard() {
                 </svg>
 
                 <span className="mt-2 text-base leading-normal text-gray-500">
-                <input
-                  accept=".csv"
-                  className="w-full max-w-md"
-                  type="file"
-                  onChange={(e) => setFile(e.target.files?.[0] || null)}
-                />
+                  <input
+                    accept=".csv"
+                    className="w-full max-w-md"
+                    type="file"
+                    onChange={(e) => setFile(e.target.files?.[0] || null)}
+                  />
                 </span>
-
-                
               </label>
 
               <Button className="w-full max-w-md" onPress={uploadCSV}>
@@ -198,15 +199,23 @@ interface AnalysisProps {
   data: SelectedData;
 }
 
-function Analysis({ data }: AnalysisProps) { 
+function Analysis({ data }: AnalysisProps) {
   console.log(data);
   const equipmentTypes = data.equipment_type_distribution || {};
   const typeLabels = Object.keys(equipmentTypes);
   const typeValues = Object.values(equipmentTypes);
-  const flowrateValues = data.equipment_list.map((e: EquipmentData) => e["Flowrate"]);
-  const temperatureValues = data.equipment_list.map((e: EquipmentData) => e["Temperature"]);
-  const pressureValues = data.equipment_list.map((e: EquipmentData) => e["Pressure"]);
-  const equipmentNames = data.equipment_list.map((e: EquipmentData) => e["Equipment Name"]);
+  const flowrateValues = data.equipment_list.map(
+    (e: EquipmentData) => e["Flowrate"],
+  );
+  const temperatureValues = data.equipment_list.map(
+    (e: EquipmentData) => e["Temperature"],
+  );
+  const pressureValues = data.equipment_list.map(
+    (e: EquipmentData) => e["Pressure"],
+  );
+  const equipmentNames = data.equipment_list.map(
+    (e: EquipmentData) => e["Equipment Name"],
+  );
   const [page, setPage] = useState(1);
   const rowsPerPage = 10;
 
@@ -215,7 +224,7 @@ function Analysis({ data }: AnalysisProps) {
     const start = (page - 1) * rowsPerPage;
 
     return data.equipment_list.slice(start, start + rowsPerPage);
-  }, [page, data.equipment_list]); 
+  }, [page, data.equipment_list]);
   const metricLabels = ["Flowrate", "Pressure", "Temperature"];
   const metricValues = [
     data.average_flowrate || 0,
@@ -248,12 +257,14 @@ function Analysis({ data }: AnalysisProps) {
         <Box title="Avg Temperature" value={data.average_temperature || 0} />
       </div>
       <div className="flex justify-end mb-4">
-        <ExportPDFButton data={data} chartRefs={chartRefs} />
+        <ExportPDFButton chartRefs={chartRefs} data={data} />
       </div>
-      <Divider className="my-4 md:my-8" /> 
+      <Divider className="my-4 md:my-8" />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
- 
-        <div ref={chartRefs.avgMetrics} className="p-3 md:p-4 rounded-xl shadow-md">
+        <div
+          ref={chartRefs.avgMetrics}
+          className="p-3 md:p-4 rounded-xl shadow-md"
+        >
           <h3 className="text-base md:text-lg font-semibold mb-2">
             Average Metrics
           </h3>
@@ -267,7 +278,10 @@ function Analysis({ data }: AnalysisProps) {
         </div>
 
         {/* Equipment Type Distribution */}
-        <div ref={chartRefs.avgMetrics} className="p-3 md:p-4 rounded-xl shadow-md">
+        <div
+          ref={chartRefs.avgMetrics}
+          className="p-3 md:p-4 rounded-xl shadow-md"
+        >
           <h3 className="text-base md:text-lg font-semibold mb-2">
             Equipment Type Distribution
           </h3>
@@ -286,7 +300,7 @@ function Analysis({ data }: AnalysisProps) {
       <Divider className="my-4 md:my-8" />
 
       {/* Line Graphs */}
-      <div  ref={chartRefs.avgMetrics} className="space-y-6 md:space-y-8">
+      <div ref={chartRefs.avgMetrics} className="space-y-6 md:space-y-8">
         <div className="p-3 md:p-4 rounded-xl shadow-md">
           <h3 className="text-base md:text-lg font-semibold mb-2">
             Flowrate by Equipment
@@ -300,7 +314,10 @@ function Analysis({ data }: AnalysisProps) {
           </div>
         </div>
 
-        <div ref={chartRefs.flowrateChart} className="p-3 md:p-4 rounded-xl shadow-md">
+        <div
+          ref={chartRefs.flowrateChart}
+          className="p-3 md:p-4 rounded-xl shadow-md"
+        >
           <h3 className="text-base md:text-lg font-semibold mb-2">
             Temperature by Equipment
           </h3>
@@ -313,8 +330,11 @@ function Analysis({ data }: AnalysisProps) {
           </div>
         </div>
       </div>
- 
-      <div ref={chartRefs.flowratePressure} className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-6 md:mt-8">
+
+      <div
+        ref={chartRefs.flowratePressure}
+        className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-6 md:mt-8"
+      >
         <div className="p-3 md:p-4 rounded-xl shadow-md">
           <h3 className="text-sm md:text-base font-semibold mb-2">
             Flowrate vs Pressure
@@ -328,7 +348,10 @@ function Analysis({ data }: AnalysisProps) {
             />
           </div>
         </div>
-        <div ref={chartRefs.flowrateTemperature} className="p-3 md:p-4 rounded-xl shadow-md">
+        <div
+          ref={chartRefs.flowrateTemperature}
+          className="p-3 md:p-4 rounded-xl shadow-md"
+        >
           <h3 className="text-sm md:text-base font-semibold mb-2">
             Flowrate vs Temperature
           </h3>
@@ -341,7 +364,10 @@ function Analysis({ data }: AnalysisProps) {
             />
           </div>
         </div>
-        <div ref={chartRefs.pressureTemperature} className="p-3 md:p-4 rounded-xl shadow-md">
+        <div
+          ref={chartRefs.pressureTemperature}
+          className="p-3 md:p-4 rounded-xl shadow-md"
+        >
           <h3 className="text-sm md:text-base font-semibold mb-2">
             Pressure vs Temperature
           </h3>
@@ -358,8 +384,9 @@ function Analysis({ data }: AnalysisProps) {
 
       <Divider className="my-4 md:my-8" />
 
-     
-      <h2 className="text-lg md:text-xl font-semibold mb-3 mt-6 md:mt-8">Equipment Data</h2>
+      <h2 className="text-lg md:text-xl font-semibold mb-3 mt-6 md:mt-8">
+        Equipment Data
+      </h2>
       {equipmentList.length ? (
         <div className="overflow-x-auto">
           <Table
@@ -382,21 +409,31 @@ function Analysis({ data }: AnalysisProps) {
           >
             <TableHeader>
               {columns.map((col) => (
-                <TableColumn key={col}>{col.charAt(0).toUpperCase() + col.slice(1)}</TableColumn>
+                <TableColumn key={col}>
+                  {col.charAt(0).toUpperCase() + col.slice(1)}
+                </TableColumn>
               ))}
             </TableHeader>
 
             <TableBody items={paginatedRows}>
               {(row) => (
-                <TableRow key={(row as EquipmentData)["Equipment Name"] || (row as any).id}>
-                  {(columnKey) => <TableCell>{getKeyValue(row, columnKey)}</TableCell>}
+                <TableRow
+                  key={
+                    (row as EquipmentData)["Equipment Name"] || (row as any).id
+                  }
+                >
+                  {(columnKey) => (
+                    <TableCell>{getKeyValue(row, columnKey)}</TableCell>
+                  )}
                 </TableRow>
               )}
             </TableBody>
           </Table>
         </div>
       ) : (
-        <p className="text-gray-500 text-sm md:text-base">No CSV data available</p>
+        <p className="text-gray-500 text-sm md:text-base">
+          No CSV data available
+        </p>
       )}
     </div>
   );
