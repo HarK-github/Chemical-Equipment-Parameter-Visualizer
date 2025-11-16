@@ -1,25 +1,39 @@
-version: "3.9"
+version: "3.8"
 
 services:
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "3000:80"
-    depends_on:
-      - backend
-    environment:
-      - VITE_API_URL=http://localhost:8000/api
-
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+    command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000
     ports:
       - "8000:8000"
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+    command: sh -c "npm install && npm run dev -- --host"
+    ports:
+      - "5173:5173"
     volumes:
-      - ./backend:/app
-      - ./backend/csv_files:/app/csv_files
-    environment:
-      - DJANGO_SETTINGS_MODULE=backend.settings
+      - ./frontend:/frontend
+      - /frontend/node_modules
+    depends_on:
+      - backend
+    restart: on-failure
+
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx-setup.conf:/etc/nginx/conf.d/default.conf:ro
+      - react_build:/var/www/frontend:ro
+    depends_on:
+      - backend
+      - frontend
+    restart: always
+
+volumes:
+  react_build:

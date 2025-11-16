@@ -1,87 +1,138 @@
+ 
 
 # Chemical-Equipment-Parameter-Visualizer 
 
-The **Chemical Equipment Parameter Visualizer** is a hybrid application that provides both web and desktop interfaces for visualizing and analyzing chemical equipment data. Users can upload CSV files containing equipment information, and the app generates summary statistics, charts, and historical data insights.
+The Chemical Equipment Parameter Visualizer is a hybrid application that provides both web and desktop interfaces for analyzing and visualizing chemical equipment data. Users can upload CSV files and view summary statistics, charts, historical datasets, and optionally generate PDF reports.
 
-My project demonstrates a full-stack setup using a Django backend and two separate frontends: **React.js** for web and **PyQt5** for desktop.
+The system includes:
 
----
-
-## Features
-
-* **CSV Upload:** Upload CSV files containing equipment data (`Equipment Name`, `Type`, `Flowrate`, `Pressure`, `Temperature`).
-* **Data Summary API:** Backend API calculates total count, averages, and equipment type distribution.
-* **Visualization:**
-
-  * **Web:** Chart.js displays bar charts, pie charts, and scatter plots. HeroUI provides UI components and theming.
-  * **Desktop:** Matplotlib provides the same visualizations in a standalone PyQt5 app.
-* **History Management:** Stores the last 5 uploaded datasets with summaries.
-* **PDF Reports:** Generate PDF reports of uploaded datasets.
-* **Authentication:** Basic authentication for secure access.
+* Django REST API backend
+* React.js web frontend
+* PyQt5 desktop application
+* Optional Docker deployment with Nginx
 
 ---
 
-## Tech Stack
+# Docker Deployment (Primary Deployment Method)
 
-| Layer              | Technology                            | Purpose                           |
-| ------------------ | ------------------------------------- | --------------------------------- |
-| Frontend (Web)     | React.js + Chart.js                   | Table and chart visualization     |
-| Frontend (Desktop) | PyQt5 + Matplotlib                    | Desktop visualization             |
-| Backend            | Python Django + Django REST Framework | API and data processing           |
-| Data Handling      | Pandas                                | CSV parsing and analytics         |
-| Database           | SQLite                                | Store last 5 uploaded datasets    |
-| Version Control    | Git & GitHub                          | Code management and collaboration |
+This section describes how to run the complete application stack using Docker Compose. This deployment bundles:
+
+1. Django backend (Gunicorn)
+2. React production build
+3. Nginx reverse proxy serving the frontend and routing API requests
 
 ---
 
-## Getting Started
+## 1. Prerequisites
 
-### Prerequisites
-
-* Python >= 3.9
-* Node.js >= 18
-* npm or yarn
-* pip packages: `Django`, `djangorestframework`, `pandas`, `matplotlib`, `PyQt5`, `reportlab`
+* Docker (version 24 or later recommended)
+* Docker Compose (version 2 or later)
+* Git
 
 ---
 
-### Backend Setup (Django)
-
-1. Clone the repository:
+## 2. Clone the Repository
 
 ```bash
 git clone <repository_url>
-cd chemical-equipment-visualizer/backend
+cd chemical-equipment-parameter-visualizer
 ```
 
-2. **Create a virtual environment** and activate it:
+---
+
+## 3. Docker Architecture Overview
+
+Your Docker setup contains three services:
+
+### backend
+
+* Runs Django + Gunicorn
+* Exposes port 8000 internally
+
+### frontend
+
+* Builds the React production bundle
+* Outputs the compiled `dist/` folder to a shared volume
+
+### Desktop
+
+* PyQt5 app to run on device
+
+## 4. Start the Application
+
+From the project root:
 
 ```bash
-python -m venv venv       # Create venv
-# Activate:
-source venv/bin/activate  # Linux/macOS
-venv\Scripts\activate     # Windows
+docker compose up --build
 ```
 
-3. Install dependencies:
+Once all containers are running:
+
+* Web application:
+  `http://localhost/`
+
+* Backend API (direct):
+  `http://127.0.0.1:8000/`
+
+* Frontend:
+  `http://localhost:5173/`
+
+---
+
+
+## 6. Development Mode 
+
+ 
+
+Access the dev server at:
+
+```
+http://localhost:5173/
+```
+
+---
+
+# Manual Setup (Non-Docker)
+
+This section explains how to run the backend, web frontend, and desktop application directly on your local machine.
+
+---
+
+# Backend: Django
+
+## 1. Navigate to the backend directory
+
+```bash
+cd backend
+```
+
+## 2. Create a virtual environment
+
+```bash
+python -m venv venv
+source venv/bin/activate       # macOS/Linux
+venv\Scripts\activate          # Windows
+```
+
+## 3. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Apply migrations:
+## 4. Apply migrations
 
 ```bash
 python manage.py migrate
 ```
 
-5. Run the backend server:
+## 5. Start the backend server
 
 ```bash
 python manage.py runserver
 ```
 
-The API will be available at:
+The backend will be available at:
 
 ```
 http://127.0.0.1:8000/
@@ -89,35 +140,33 @@ http://127.0.0.1:8000/
 
 ---
 
-### Web Frontend Setup (React.js)
+# Web Frontend: React.js
 
-1. Navigate to the frontend directory:
+## 1. Navigate to the frontend directory
 
 ```bash
 cd ../frontend
 ```
 
-2. Install dependencies:
+## 2. Install dependencies
 
 ```bash
 npm install
 ```
 
-3. Set your backend API URL in `.env`:
+## 3. Set API endpoint in `.env`
 
 ```env
 VITE_API_URL=http://127.0.0.1:8000/
 ```
 
-> **Note:** When running in Docker Compose, replace `127.0.0.1` with the backend service name (e.g., `http://backend:8000/`).
-
-4. Start the development server:
+## 4. Start the development server
 
 ```bash
 npm run dev
 ```
 
-The web app will run at:
+Frontend available at:
 
 ```
 http://localhost:3000/
@@ -125,29 +174,28 @@ http://localhost:3000/
 
 ---
 
-### Desktop Frontend Setup (PyQt5)
+# Desktop Application: PyQt5
 
-1. Navigate to the desktop app directory:
+## 1. Navigate to the desktop folder
 
 ```bash
 cd ../desktop
 ```
 
-2. Create a virtual environment and activate it (recommended):
+## 2. Create and activate a virtual environment
 
 ```bash
 python -m venv venv
-source venv/bin/activate  # Linux/macOS
-venv\Scripts\activate     # Windows
+source venv/bin/activate
 ```
 
-3. Install dependencies:
+## 3. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Run the PyQt5 app:
+## 4. Run the desktop application
 
 ```bash
 python main.py
@@ -155,80 +203,35 @@ python main.py
 
 ---
 
-## Usage
+# Features
 
-1. Open the web or desktop app.
-2. Authenticate using your credentials (or register if new).
-3. Upload a CSV file containing equipment data.
-4. View summary statistics, charts, and historical datasets.
-5. Optionally, generate a PDF report for the uploaded dataset.
-
----
-
-## Sample CSV Format
-
-| Equipment Name | Type    | Flowrate | Pressure | Temperature |
-| -------------- | ------- | -------- | -------- | ----------- |
-| Pump A         | Pump    | 50       | 10       | 120         |
-| Valve B        | Valve   | 30       | 15       | 90          |
-| Reactor C      | Reactor | 80       | 20       | 150         |
+* CSV upload
+* Summary statistics generation
+* Visualization (Chart.js for web, Matplotlib for desktop)
+* Storage of last five uploaded datasets
+* PDF report generation
+* Basic user authentication
+* SQLite persistence
 
 ---
 
-## Project Structure
+# Project Structure
 
 ```
 chemical-equipment-visualizer/
 │
-├─ backend/                  # Django backend
-│  ├─ api/                   # App: models, serializers, views
-│  ├─ db.sqlite3
-│  └─ manage.py
-│
-├─ frontend-web/             # React.js frontend
-│  ├─ src/
-│  │  ├─ components/
-│  │  ├─ pages/
-│  │  └─ api.tsx
-│  └─ package.json
-│
-├─ frontend-desktop/         # PyQt5 frontend
-│  ├─ main.py
-│  ├─ ui/
-│  └─ requirements.txt
-│
-└─ README.md
+├─ backend/                    # Django backend
+├─ frontend/                   # React.js frontend
+├─ desktop/                    # PyQt5 desktop app
+├─ nginx/                      # Nginx config
+└─ docker-compose.yml
 ```
 
 ---
 
-## Docker Setup (Optional)
+# License
 
-You can containerize the frontend and backend for easier deployment. Example:
+This project is licensed under the MIT License.
+Developed by Harshit Kandpal
 
-```bash
-# Build and start services
-docker-compose up --build
-```
-
-> The frontend and backend can communicate using service names in Docker Compose (e.g., `http://backend:8000/`).
-
----
-
-## Demo Video
-
-Include a short demo (2–3 minutes) showing:
-
-* CSV upload
-* Data visualization (charts & tables)
-* History and PDF generation
-* Authentication flow
-
----
-
-## License
-
-This project is licensed under the **MIT License**.
-
----
  
