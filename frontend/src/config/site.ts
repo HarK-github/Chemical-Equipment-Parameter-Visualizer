@@ -14,18 +14,18 @@ export const siteConfig = {
     {
       label: "Dashboard",
       href: "/dashboard",
-      auth: "private", 
+      auth: "private",
     },
     {
       label: "Login",
       href: "/login",
-      auth: "public", 
+      auth: "public",
     },
     {
       label: "Logout",
       href: "/logout",
-      auth: "private", 
-    }
+      auth: "private",
+    },
   ],
 
   navMenuItems: [
@@ -52,6 +52,7 @@ export const siteConfig = {
   ],
 
   links: {
-    github: "https://github.com/HarK-github/Chemical-Equipment-Parameter-Visualizer",
+    github:
+      "https://github.com/HarK-github/Chemical-Equipment-Parameter-Visualizer",
   },
 };

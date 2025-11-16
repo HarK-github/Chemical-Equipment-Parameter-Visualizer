@@ -22,7 +22,7 @@ ChartJs.register(
   Title,
   Tooltip,
   Legend,
-  ArcElement // Make sure ArcElement is registered
+  ArcElement, // Make sure ArcElement is registered
 );
 
 // Define prop types for each chart component

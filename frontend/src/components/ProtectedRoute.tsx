@@ -1,10 +1,12 @@
 import { Navigate } from "react-router-dom";
 import { ReactNode } from "react";
-import { jwtDecode,JwtPayload } from "jwt-decode";
+import { jwtDecode, JwtPayload } from "jwt-decode";
 import { useEffect, useState } from "react";
 import { Spinner } from "@heroui/spinner";
 import { addToast } from "@heroui/toast";
+
 import api from "../api";
+
 import { REFRESH_TOKEN, ACCESS_TOKEN } from "@/constants";
 
 interface ProtectedRouteProps {
@@ -33,11 +35,14 @@ function ProtectedRoute({ children }: ProtectedRouteProps) {
         color: "warning",
         timeout: 5000,
       });
+
       return;
     }
 
     try {
-      const res = await api.post("/api/token/refresh", { refresh: refreshToken });
+      const res = await api.post("/api/token/refresh", {
+        refresh: refreshToken,
+      });
 
       if (res.status === 200 && res.data.access) {
         localStorage.setItem(ACCESS_TOKEN, res.data.access);
@@ -74,6 +79,7 @@ function ProtectedRoute({ children }: ProtectedRouteProps) {
         color: "primary",
         timeout: 4000,
       });
+
       return;
     }
 

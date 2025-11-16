@@ -51,7 +51,7 @@ export function ExportPDFButton({ data, chartRefs }: ExportPDFButtonProps) {
         `Generated: ${new Date().toLocaleString()}`,
         pageWidth / 2,
         yPosition,
-        { align: "center" }
+        { align: "center" },
       );
       yPosition += 15;
 
@@ -92,7 +92,7 @@ export function ExportPDFButton({ data, chartRefs }: ExportPDFButtonProps) {
         yPosition += 10;
 
         const equipmentTypes = Object.entries(
-          data.equipment_type_distribution
+          data.equipment_type_distribution,
         ).map(([type, count]) => [type, count?.toString() || "0"]);
 
         autoTable(doc, {
@@ -156,7 +156,7 @@ export function ExportPDFButton({ data, chartRefs }: ExportPDFButtonProps) {
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
             const finalImgHeight = Math.min(
               imgHeight,
-              pageHeight - yPosition - 20
+              pageHeight - yPosition - 20,
             );
 
             doc.addImage(
@@ -165,7 +165,7 @@ export function ExportPDFButton({ data, chartRefs }: ExportPDFButtonProps) {
               chart.small ? 30 : 20,
               yPosition,
               imgWidth,
-              finalImgHeight
+              finalImgHeight,
             );
           } catch (error) {
             console.error(`Failed to capture ${chart.title}:`, error);
@@ -190,10 +190,12 @@ export function ExportPDFButton({ data, chartRefs }: ExportPDFButtonProps) {
         const rows = data.equipment_list.map((item) =>
           columns.map((col) => {
             const value = item[col];
+
             if (value === null || value === undefined) return "N/A";
             if (typeof value === "number") return value.toFixed(2);
+
             return value.toString();
-          })
+          }),
         );
 
         autoTable(doc, {
@@ -206,9 +208,10 @@ export function ExportPDFButton({ data, chartRefs }: ExportPDFButtonProps) {
           columnStyles: columns.reduce(
             (acc: Record<number, any>, _col, idx) => {
               acc[idx] = { cellWidth: "auto", minCellHeight: 8 };
+
               return acc;
             },
-            {}
+            {},
           ),
           pageBreak: "auto",
           tableWidth: "wrap",
@@ -219,6 +222,7 @@ export function ExportPDFButton({ data, chartRefs }: ExportPDFButtonProps) {
       const fileName = `Equipment_Analysis_${new Date()
         .toISOString()
         .slice(0, 10)}.pdf`;
+
       doc.save(fileName);
     } catch (error) {
       console.error("Failed to generate PDF:", error);
@@ -257,6 +261,6 @@ export function useChartRefs(): ChartRefs {
       flowrateTemperature,
       pressureTemperature,
     }),
-    []
+    [],
   );
 }
