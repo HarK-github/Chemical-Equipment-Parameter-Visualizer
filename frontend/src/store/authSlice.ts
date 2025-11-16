@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "@/constants";
 
 const initialState = {
