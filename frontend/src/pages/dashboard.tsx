@@ -23,10 +23,35 @@ import {
   ScatterGraph,
 } from "../components/Charts";
 import { ExportPDFButton } from "../components/ExportPdf";
+
+interface HistoryItem {
+  id: number;
+  title: string;
+  uploaded_at: string;
+}
+
+interface EquipmentData {
+  [key: string]: any;
+  "Equipment Name": string;
+  "Flowrate": number;
+  "Temperature": number;
+  "Pressure": number;
+}
+
+interface SelectedData {
+  id: number;
+  equipment_type_distribution?: { [key: string]: number };
+  equipment_list: EquipmentData[];
+  total_count?: number;
+  average_flowrate?: number;
+  average_pressure?: number;
+  average_temperature?: number;
+}
+
 export default function Dashboard() {
-  const [file, setFile] = useState(null);
-  const [history, setHistory] = useState([]);
-  const [selected, setSelected] = useState(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [selected, setSelected] = useState<SelectedData | null>(null);
   
   const loadHistory = async () => {
     try {
@@ -71,7 +96,7 @@ export default function Dashboard() {
     }
   };
  
-  const loadCSV = async (id) => {
+  const loadCSV = async (id: number) => {
     try {
       const res = await api.get(`/api/csv/${id}/`, {
         headers: {
@@ -86,7 +111,7 @@ export default function Dashboard() {
     }
   };
 
-  const deleteCSV = async (id) => {
+  const deleteCSV = async (id: number) => {
     try {
       await api.delete(`/api/delete-csv/${id}/`, {
         headers: {
@@ -136,7 +161,7 @@ export default function Dashboard() {
                   accept=".csv"
                   className="w-full max-w-md"
                   type="file"
-                  onChange={(e) => setFile(e.target.files[0])}
+                  onChange={(e) => setFile(e.target.files?.[0] || null)}
                 />
                 </span>
 
@@ -169,15 +194,19 @@ export default function Dashboard() {
   );
 }
 
-function Analysis({ data }) { 
+interface AnalysisProps {
+  data: SelectedData;
+}
+
+function Analysis({ data }: AnalysisProps) { 
   console.log(data);
   const equipmentTypes = data.equipment_type_distribution || {};
   const typeLabels = Object.keys(equipmentTypes);
   const typeValues = Object.values(equipmentTypes);
-  const flowrateValues = data.equipment_list.map((e) => e["Flowrate"]);
-  const temperatureValues = data.equipment_list.map((e) => e["Temperature"]);
-  const pressureValues = data.equipment_list.map((e) => e["Pressure"]);
-  const equipmentNames = data.equipment_list.map((e) => e["Equipment Name"]);
+  const flowrateValues = data.equipment_list.map((e: EquipmentData) => e["Flowrate"]);
+  const temperatureValues = data.equipment_list.map((e: EquipmentData) => e["Temperature"]);
+  const pressureValues = data.equipment_list.map((e: EquipmentData) => e["Pressure"]);
+  const equipmentNames = data.equipment_list.map((e: EquipmentData) => e["Equipment Name"]);
   const [page, setPage] = useState(1);
   const rowsPerPage = 10;
 
@@ -359,7 +388,7 @@ function Analysis({ data }) {
 
             <TableBody items={paginatedRows}>
               {(row) => (
-                <TableRow key={row["Equipment Name"] || row.id}>
+                <TableRow key={(row as EquipmentData)["Equipment Name"] || (row as any).id}>
                   {(columnKey) => <TableCell>{getKeyValue(row, columnKey)}</TableCell>}
                 </TableRow>
               )}
@@ -373,7 +402,12 @@ function Analysis({ data }) {
   );
 }
 
-function Box({ title, value }) {
+interface BoxProps {
+  title: string;
+  value: number;
+}
+
+function Box({ title, value }: BoxProps) {
   return (
     <div className="p-2 md:p-4 rounded-xl shadow-md text-center">
       <h2 className="text-sm md:text-lg">{title}</h2>
@@ -382,13 +416,19 @@ function Box({ title, value }) {
   );
 }
 
-function History({ history, onLoad, onDelete }) {
+interface HistoryProps {
+  history: HistoryItem[];
+  onLoad: (id: number) => void;
+  onDelete: (id: number) => void;
+}
+
+function History({ history, onLoad, onDelete }: HistoryProps) {
   if (!history.length)
     return <p className="text-center py-4">No history yet.</p>;
 
   return (
     <Accordion className="w-full" variant="bordered">
-      {history.map((item) => (
+      {history.map((item: HistoryItem) => (
         <AccordionItem
           key={item.id}
           className="text-sm md:text-base"

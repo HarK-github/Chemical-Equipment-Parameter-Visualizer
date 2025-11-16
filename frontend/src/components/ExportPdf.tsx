@@ -4,7 +4,31 @@ import autoTable from "jspdf-autotable";
 import html2canvas from "html2canvas";
 import React from "react";
 
-export function ExportPDFButton({ data, chartRefs }) {
+// Define types for chart references
+export interface ChartRefs {
+  avgMetrics?: React.RefObject<HTMLDivElement>;
+  pieChart?: React.RefObject<HTMLDivElement>;
+  flowrateChart?: React.RefObject<HTMLDivElement>;
+  temperatureChart?: React.RefObject<HTMLDivElement>;
+  flowratePressure?: React.RefObject<HTMLDivElement>;
+  flowrateTemperature?: React.RefObject<HTMLDivElement>;
+  pressureTemperature?: React.RefObject<HTMLDivElement>;
+}
+
+// Define type for PDF export props
+export interface ExportPDFButtonProps {
+  data: {
+    total_count?: number;
+    average_flowrate?: number;
+    average_pressure?: number;
+    average_temperature?: number;
+    equipment_type_distribution?: Record<string, number>;
+    equipment_list?: Array<Record<string, any>>;
+  };
+  chartRefs?: ChartRefs;
+}
+
+export function ExportPDFButton({ data, chartRefs }: ExportPDFButtonProps) {
   const generatePDF = async () => {
     try {
       const doc = new jsPDF("p", "mm", "a4");
@@ -53,7 +77,10 @@ export function ExportPDFButton({ data, chartRefs }) {
       yPosition = (doc as any).lastAutoTable.finalY + 15;
 
       // Equipment Type Distribution
-      if (data?.equipment_type_distribution && Object.keys(data.equipment_type_distribution).length > 0) {
+      if (
+        data?.equipment_type_distribution &&
+        Object.keys(data.equipment_type_distribution).length > 0
+      ) {
         if (yPosition > pageHeight - 40) {
           doc.addPage();
           yPosition = 20;
@@ -85,7 +112,10 @@ export function ExportPDFButton({ data, chartRefs }) {
           { ref: chartRefs.avgMetrics, title: "Average Metrics" },
           { ref: chartRefs.pieChart, title: "Equipment Type Distribution" },
           { ref: chartRefs.flowrateChart, title: "Flowrate by Equipment" },
-          { ref: chartRefs.temperatureChart, title: "Temperature by Equipment" },
+          {
+            ref: chartRefs.temperatureChart,
+            title: "Temperature by Equipment",
+          },
           {
             ref: chartRefs.flowratePressure,
             title: "Flowrate vs Pressure",
@@ -101,7 +131,7 @@ export function ExportPDFButton({ data, chartRefs }) {
             title: "Pressure vs Temperature",
             small: true,
           },
-        ].filter(chart => chart.ref?.current);
+        ].filter((chart) => chart.ref?.current);
 
         for (const chart of charts) {
           doc.addPage();
@@ -113,18 +143,21 @@ export function ExportPDFButton({ data, chartRefs }) {
           yPosition += 15;
 
           try {
-            const canvas = await html2canvas(chart.ref.current, {
+            const canvas = await html2canvas(chart.ref!.current!, {
               scale: 2,
               backgroundColor: "#ffffff",
               useCORS: true,
               allowTaint: true,
               logging: false,
             });
-            const imgData = canvas.toDataURL("image/png");
 
+            const imgData = canvas.toDataURL("image/png");
             const imgWidth = chart.small ? pageWidth - 60 : pageWidth - 40;
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            const finalImgHeight = Math.min(imgHeight, pageHeight - yPosition - 20);
+            const finalImgHeight = Math.min(
+              imgHeight,
+              pageHeight - yPosition - 20
+            );
 
             doc.addImage(
               imgData,
@@ -170,12 +203,15 @@ export function ExportPDFButton({ data, chartRefs }) {
           margin: { left: 15 },
           headStyles: { fillColor: [59, 130, 246] },
           styles: { fontSize: 8, cellPadding: 2 },
-          columnStyles: columns.reduce((acc, col, idx) => {
-            acc[idx] = { cellWidth: "auto", minCellHeight: 8 };
-            return acc;
-          }, {}),
-          pageBreak: 'auto',
-          tableWidth: 'wrap'
+          columnStyles: columns.reduce(
+            (acc: Record<number, any>, _col, idx) => {
+              acc[idx] = { cellWidth: "auto", minCellHeight: 8 };
+              return acc;
+            },
+            {}
+          ),
+          pageBreak: "auto",
+          tableWidth: "wrap",
         });
       }
 
@@ -191,33 +227,36 @@ export function ExportPDFButton({ data, chartRefs }) {
   };
 
   return (
-    <Button 
-      onPress={generatePDF} 
+    <Button
       className="w-full md:w-auto"
       isDisabled={!data}
+      onPress={generatePDF}
     >
       Export PDF Report
     </Button>
   );
 }
 
-// Hook version for use in the Analysis component
-export function useChartRefs() {
-  const avgMetrics = React.useRef(null);
-  const pieChart = React.useRef(null);
-  const flowrateChart = React.useRef(null);
-  const temperatureChart = React.useRef(null);
-  const flowratePressure = React.useRef(null);
-  const flowrateTemperature = React.useRef(null);
-  const pressureTemperature = React.useRef(null);
+// Hook for chart references
+export function useChartRefs(): ChartRefs {
+  const avgMetrics = React.useRef<HTMLDivElement>(null);
+  const pieChart = React.useRef<HTMLDivElement>(null);
+  const flowrateChart = React.useRef<HTMLDivElement>(null);
+  const temperatureChart = React.useRef<HTMLDivElement>(null);
+  const flowratePressure = React.useRef<HTMLDivElement>(null);
+  const flowrateTemperature = React.useRef<HTMLDivElement>(null);
+  const pressureTemperature = React.useRef<HTMLDivElement>(null);
 
-  return React.useMemo(() => ({
-    avgMetrics,
-    pieChart,
-    flowrateChart,
-    temperatureChart,
-    flowratePressure,
-    flowrateTemperature,
-    pressureTemperature,
-  }), []);
+  return React.useMemo(
+    () => ({
+      avgMetrics,
+      pieChart,
+      flowrateChart,
+      temperatureChart,
+      flowratePressure,
+      flowrateTemperature,
+      pressureTemperature,
+    }),
+    []
+  );
 }

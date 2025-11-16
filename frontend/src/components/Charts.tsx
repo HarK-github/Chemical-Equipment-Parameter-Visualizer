@@ -8,9 +8,9 @@ import {
   Title,
   Tooltip,
   Legend,
-  ArcElement
+  ArcElement,
 } from "chart.js";
-import { Line, Bar, Pie,Scatter } from "react-chartjs-2";
+import { Line, Bar, Pie, Scatter } from "react-chartjs-2";
 
 // Register all required components
 ChartJs.register(
@@ -22,11 +22,36 @@ ChartJs.register(
   Title,
   Tooltip,
   Legend,
-  ArcElement  // Make sure ArcElement is registered
+  ArcElement // Make sure ArcElement is registered
 );
 
+// Define prop types for each chart component
+interface LineGraphProps {
+  labels: string[];
+  dataPoints: number[];
+  label: string;
+}
+
+interface BarGraphProps {
+  labels: string[];
+  dataPoints: number[];
+  label: string;
+}
+
+interface PieGraphProps {
+  labels: string[];
+  dataPoints: number[];
+}
+
+interface ScatterGraphProps {
+  xData: number[];
+  yData: number[];
+  xLabel: string;
+  yLabel: string;
+}
+
 // Line Chart Component
-const LineGraph = ({ labels, dataPoints, label }) => {
+const LineGraph = ({ labels, dataPoints, label }: LineGraphProps) => {
   const data = {
     labels,
     datasets: [
@@ -41,14 +66,14 @@ const LineGraph = ({ labels, dataPoints, label }) => {
 
   const options = {
     responsive: true,
-    plugins: { legend: { position: "top" } },
+    plugins: { legend: { position: "top" as const } },
   };
 
   return <Line data={data} options={options} />;
 };
 
 // Bar Chart Component
-const BarGraph = ({ labels, dataPoints, label }) => {
+const BarGraph = ({ labels, dataPoints, label }: BarGraphProps) => {
   const data = {
     labels,
     datasets: [
@@ -62,14 +87,14 @@ const BarGraph = ({ labels, dataPoints, label }) => {
 
   const options = {
     responsive: true,
-    plugins: { legend: { position: "top" } },
+    plugins: { legend: { position: "top" as const } },
   };
 
   return <Bar data={data} options={options} />;
 };
 
 // Pie Chart Component
-const PieGraph = ({ labels, dataPoints }) => {
+const PieGraph = ({ labels, dataPoints }: PieGraphProps) => {
   const data = {
     labels,
     datasets: [
@@ -89,12 +114,13 @@ const PieGraph = ({ labels, dataPoints }) => {
   return <Pie data={data} />;
 };
 
-function ScatterGraph({ xData, yData, xLabel, yLabel }) {
+// Scatter Chart Component
+function ScatterGraph({ xData, yData, xLabel, yLabel }: ScatterGraphProps) {
   const data = {
     datasets: [
       {
         label: `${yLabel} vs ${xLabel}`,
-        data: xData.map((x, i) => ({ x, y: yData[i] })),
+        data: xData.map((x: number, i: number) => ({ x, y: yData[i] })),
         backgroundColor: "rgba(75, 192, 192, 0.6)",
       },
     ],
@@ -112,5 +138,4 @@ function ScatterGraph({ xData, yData, xLabel, yLabel }) {
   return <Scatter data={data} options={options} />;
 }
 
-
-export { LineGraph, PieGraph, BarGraph,ScatterGraph };
+export { LineGraph, PieGraph, BarGraph, ScatterGraph };

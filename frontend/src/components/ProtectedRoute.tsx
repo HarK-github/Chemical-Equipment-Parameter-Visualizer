@@ -1,13 +1,22 @@
 import { Navigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
+import { ReactNode } from "react";
+import { jwtDecode,JwtPayload } from "jwt-decode";
 import { useEffect, useState } from "react";
 import { Spinner } from "@heroui/spinner";
 import { addToast } from "@heroui/toast";
 import api from "../api";
 import { REFRESH_TOKEN, ACCESS_TOKEN } from "@/constants";
 
-function ProtectedRoute({ children }) {
-  const [isAuth, setIsAuth] = useState(null);
+interface ProtectedRouteProps {
+  children: ReactNode;
+}
+
+interface DecodedToken extends JwtPayload {
+  exp: number;
+}
+
+function ProtectedRoute({ children }: ProtectedRouteProps) {
+  const [isAuth, setIsAuth] = useState<boolean | null>(null);
 
   useEffect(() => {
     auth().catch(() => setIsAuth(false));
@@ -16,12 +25,21 @@ function ProtectedRoute({ children }) {
   const refreshToken = async () => {
     const refreshToken = localStorage.getItem(REFRESH_TOKEN);
 
-    try {
-      const res = await api.post("/api/token/refresh", {
-        refresh: refreshToken,
+    if (!refreshToken) {
+      setIsAuth(false);
+      addToast({
+        title: "Session Expired",
+        description: "Your session has expired. Please log in again.",
+        color: "warning",
+        timeout: 5000,
       });
+      return;
+    }
 
-      if (res.status === 200) {
+    try {
+      const res = await api.post("/api/token/refresh", { refresh: refreshToken });
+
+      if (res.status === 200 && res.data.access) {
         localStorage.setItem(ACCESS_TOKEN, res.data.access);
         setIsAuth(true);
       } else {
@@ -34,7 +52,7 @@ function ProtectedRoute({ children }) {
         });
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       setIsAuth(false);
       addToast({
         title: "Session Expired",
@@ -60,17 +78,17 @@ function ProtectedRoute({ children }) {
     }
 
     try {
-      const decoded = jwtDecode(token);
+      const decoded = jwtDecode<DecodedToken>(token);
       const tokenExpiration = decoded.exp;
       const now = Date.now() / 1000;
 
-      if (tokenExpiration < now) {
+      if (!tokenExpiration || tokenExpiration < now) {
         await refreshToken();
       } else {
         setIsAuth(true);
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       setIsAuth(false);
       addToast({
         title: "Invalid Token",
@@ -83,13 +101,13 @@ function ProtectedRoute({ children }) {
 
   if (isAuth === null) {
     return (
-      <div className="absolute top-[50%] left-[50%]">
+      <div className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]">
         <Spinner />
       </div>
     );
   }
 
-  return isAuth ? children : <Navigate to="/login" />;
+  return isAuth ? <>{children}</> : <Navigate to="/login" />;
 }
 
 export default ProtectedRoute;
