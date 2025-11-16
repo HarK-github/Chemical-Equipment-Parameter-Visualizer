@@ -1,11 +1,9 @@
-# Chemical-Equipment-Parameter-Visualizer
-FOssee project
- 
-##   Overview
+
+# Chemical-Equipment-Parameter-Visualizer 
 
 The **Chemical Equipment Parameter Visualizer** is a hybrid application that provides both web and desktop interfaces for visualizing and analyzing chemical equipment data. Users can upload CSV files containing equipment information, and the app generates summary statistics, charts, and historical data insights.
 
-This project demonstrates a full-stack setup using a Django backend and two separate frontends: **React.js** for web and **PyQt5** for desktop.
+My project demonstrates a full-stack setup using a Django backend and two separate frontends: **React.js** for web and **PyQt5** for desktop.
 
 ---
 
@@ -14,7 +12,8 @@ This project demonstrates a full-stack setup using a Django backend and two sepa
 * **CSV Upload:** Upload CSV files containing equipment data (`Equipment Name`, `Type`, `Flowrate`, `Pressure`, `Temperature`).
 * **Data Summary API:** Backend API calculates total count, averages, and equipment type distribution.
 * **Visualization:**
-  * **Web:** Chart.js displays bar charts, pie charts, and scatter plots. HeroUI for component library for theming
+
+  * **Web:** Chart.js displays bar charts, pie charts, and scatter plots. HeroUI provides UI components and theming.
   * **Desktop:** Matplotlib provides the same visualizations in a standalone PyQt5 app.
 * **History Management:** Stores the last 5 uploaded datasets with summaries.
 * **PDF Reports:** Generate PDF reports of uploaded datasets.
@@ -46,7 +45,7 @@ This project demonstrates a full-stack setup using a Django backend and two sepa
 
 ---
 
-### Setup
+### Backend Setup (Django)
 
 1. Clone the repository:
 
@@ -54,11 +53,12 @@ This project demonstrates a full-stack setup using a Django backend and two sepa
 git clone <repository_url>
 cd chemical-equipment-visualizer/backend
 ```
-# Backend setup
-2. Create a virtual environment:
+
+2. **Create a virtual environment** and activate it:
 
 ```bash
-python -m venv venv
+python -m venv venv       # Create venv
+# Activate:
 source venv/bin/activate  # Linux/macOS
 venv\Scripts\activate     # Windows
 ```
@@ -81,7 +81,11 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-The API will be available at `http://127.0.0.1:8000/`.
+The API will be available at:
+
+```
+http://127.0.0.1:8000/
+```
 
 ---
 
@@ -99,13 +103,25 @@ cd ../frontend
 npm install
 ```
 
-3. Start the development server:
+3. Set your backend API URL in `.env`:
+
+```env
+VITE_API_URL=http://127.0.0.1:8000/
+```
+
+> **Note:** When running in Docker Compose, replace `127.0.0.1` with the backend service name (e.g., `http://backend:8000/`).
+
+4. Start the development server:
 
 ```bash
 npm run dev
 ```
 
-The web app will run at `http://localhost:3000/`.
+The web app will run at:
+
+```
+http://localhost:3000/
+```
 
 ---
 
@@ -116,13 +132,22 @@ The web app will run at `http://localhost:3000/`.
 ```bash
 cd ../desktop
 ```
-2 .Install dependencies:
+
+2. Create a virtual environment and activate it (recommended):
+
+```bash
+python -m venv venv
+source venv/bin/activate  # Linux/macOS
+venv\Scripts\activate     # Windows
+```
+
+3. Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Run the PyQt5 app:
+4. Run the PyQt5 app:
 
 ```bash
 python main.py
@@ -156,7 +181,7 @@ python main.py
 chemical-equipment-visualizer/
 │
 ├─ backend/                  # Django backend
-│  ├─ equipment/             # App: models, serializers, views
+│  ├─ api/                   # App: models, serializers, views
 │  ├─ db.sqlite3
 │  └─ manage.py
 │
@@ -164,7 +189,7 @@ chemical-equipment-visualizer/
 │  ├─ src/
 │  │  ├─ components/
 │  │  ├─ pages/
-│  │  └─ api.js
+│  │  └─ api.tsx
 │  └─ package.json
 │
 ├─ frontend-desktop/         # PyQt5 frontend
@@ -177,9 +202,22 @@ chemical-equipment-visualizer/
 
 ---
 
+## Docker Setup (Optional)
+
+You can containerize the frontend and backend for easier deployment. Example:
+
+```bash
+# Build and start services
+docker-compose up --build
+```
+
+> The frontend and backend can communicate using service names in Docker Compose (e.g., `http://backend:8000/`).
+
+---
+
 ## Demo Video
 
-Include a short demo video (2–3 minutes) showing:
+Include a short demo (2–3 minutes) showing:
 
 * CSV upload
 * Data visualization (charts & tables)
@@ -188,9 +226,9 @@ Include a short demo video (2–3 minutes) showing:
 
 ---
 
-
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the **MIT License**.
 
+---
  
