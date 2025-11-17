@@ -4,6 +4,10 @@ import autoTable from "jspdf-autotable";
 import html2canvas from "html2canvas";
 import React from "react";
 
+export interface UserInfo {
+  username: string;
+}
+
 // Define types for chart references
 export interface ChartRefs {
   avgMetrics?: React.RefObject<HTMLDivElement>;
@@ -17,6 +21,7 @@ export interface ChartRefs {
 
 // Define type for PDF export props
 export interface ExportPDFButtonProps {
+  user?: UserInfo;
   data: {
     total_count?: number;
     average_flowrate?: number;
@@ -28,10 +33,11 @@ export interface ExportPDFButtonProps {
   chartRefs?: ChartRefs;
 }
 
-export function ExportPDFButton({ data, chartRefs }: ExportPDFButtonProps) {
+
+export function ExportPDFButton({ data, chartRefs,user }: ExportPDFButtonProps) {
   const generatePDF = async () => {
     try {
-      const doc = new jsPDF("p", "mm", "a4");
+     const doc = new jsPDF("p", "mm", "a4");
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
       let yPosition = 20;
@@ -44,6 +50,21 @@ export function ExportPDFButton({ data, chartRefs }: ExportPDFButtonProps) {
       });
       yPosition += 10;
 
+      // User Information
+      if (user) {
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("Prepared For:", 15, yPosition);
+        yPosition += 7;
+
+        doc.setFont("helvetica", "normal");
+
+        
+        doc.text(`Username: ${user.username}`, 15, yPosition);
+        yPosition += 6;
+
+      }
+
       // Date
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
@@ -51,10 +72,9 @@ export function ExportPDFButton({ data, chartRefs }: ExportPDFButtonProps) {
         `Generated: ${new Date().toLocaleString()}`,
         pageWidth / 2,
         yPosition,
-        { align: "center" },
+        { align: "center" }
       );
-      yPosition += 15;
-
+      yPosition += 10;
       // Summary Statistics
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");

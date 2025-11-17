@@ -1,6 +1,11 @@
- 
+<div align="center">
 
-# Chemical-Equipment-Parameter-Visualizer 
+# Chemical-Equipment-Parameter-Visualizer
+
+</div>
+
+
+## Project Overview
 
 The Chemical Equipment Parameter Visualizer is a hybrid application that provides both web and desktop interfaces for analyzing and visualizing chemical equipment data. Users can upload CSV files and view summary statistics, charts, historical datasets, and optionally generate PDF reports.
 
@@ -9,18 +14,69 @@ The system includes:
 * Django REST API backend
 * React.js web frontend
 * PyQt5 desktop application
-* Optional Docker deployment with Nginx
 
----
+--- 
 
-# Docker Deployment (Primary Deployment Method)
+## 📁File Structure
 
-This section describes how to run the complete application stack using Docker Compose. This deployment bundles:
+### Backend Directory
+```
+backend/
+├── api/                           # Django app for API endpoints
+│   ├── admin.py                  
+│   ├── models.py                
+│   ├── serializers.py           
+│   ├── views.py                  
+│   └── migrations/              
+├── backend/                      
+│   ├── settings.py               
+│   ├── deployment_settings.py    # For deployment               
+│   ├── urls.py                   
+│   └── wsgi.py                   # WSGI configuration for production
+├── csv_files/                    # Directory for uploaded CSV files
+├── db.sqlite3                    # SQLite database file
+├── Dockerfile                    # Container configuration for backend
+├── manage.py                     
+└── requirements.txt              # Python dependencies list
+```
 
-1. Django backend (Gunicorn)
-2. React production build
-3. Nginx reverse proxy serving the frontend and routing API requests
+### Frontend Directory
+```
+frontend/
+├── src/                          # Source code directory
+│   ├── api.tsx                   # API service functions
+│   ├── App.tsx                   # Main React application component
+│   ├── components/               # Reusable React components
+│   │   ├── Charts.tsx            
+│   │   ├── ExportPdf.tsx         
+│   │   ├── navbar.tsx           
+│   │   └── ProtectedRoute.tsx    # Route protection for authentication
+│   ├── pages/                    # Page components
+│   │   ├── dashboard.tsx         
+│   │   ├── home.tsx             
+│   │   ├── login.tsx             
+│   │   └── register.tsx          
+│   ├── store/                    # State management
+│   │   ├── authSlice.ts          # Authentication state slice
+│   │   └── store.ts              
+│   └── types/                    
+│       └── index.ts              # Main type definitions
+├── package.json                  
+├── Dockerfile                    
+└── nginx.config                  # Nginx web server configuration
+```
 
+### Desktop Directory
+```
+desktop/
+├── main.py                       # Main PyQt5 application entry point
+└── requirements.txt              # Python dependencies for desktop app
+```
+
+
+# Running application
+
+This section describes how to run the complete application stack using Docker Compose on your local device. 
 ---
 
 ## 1. Prerequisites
@@ -34,31 +90,13 @@ This section describes how to run the complete application stack using Docker Co
 ## 2. Clone the Repository
 
 ```bash
-git clone <repository_url>
-cd chemical-equipment-parameter-visualizer
+git clone https://github.com/HarK-github/Chemical-Equipment-Parameter-Visualizer.git
+cd Chemical-Equipment-Parameter-Visualizer
 ```
 
 ---
 
-## 3. Docker Architecture Overview
-
-Your Docker setup contains three services:
-
-### backend
-
-* Runs Django + Gunicorn
-* Exposes port 8000 internally
-
-### frontend
-
-* Builds the React production bundle
-* Outputs the compiled `dist/` folder to a shared volume
-
-### Desktop
-
-* PyQt5 app to run on device
-
-## 4. Start the Application
+## 3. Start the Application
 
 From the project root:
 
@@ -80,9 +118,8 @@ Once all containers are running:
 ---
 
 
-## 6. Development Mode 
+## 4. Development Mode 
 
- 
 
 Access the dev server at:
 
@@ -92,21 +129,20 @@ http://localhost:5173/
 
 ---
 
-# Manual Setup (Non-Docker)
-
+# 🛠 Manual Setup 
 This section explains how to run the backend, web frontend, and desktop application directly on your local machine.
 
 ---
 
-# Backend: Django
+## Backend: Django
 
-## 1. Navigate to the backend directory
+###  1. Navigate to the backend directory
 
 ```bash
 cd backend
 ```
 
-## 2. Create a virtual environment
+###  2. Create a virtual environment
 
 ```bash
 python -m venv venv
@@ -114,19 +150,19 @@ source venv/bin/activate       # macOS/Linux
 venv\Scripts\activate          # Windows
 ```
 
-## 3. Install dependencies
+###  3. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## 4. Apply migrations
+###  4. Apply migrations
 
 ```bash
 python manage.py migrate
 ```
 
-## 5. Start the backend server
+###  5. Start the backend server
 
 ```bash
 python manage.py runserver
@@ -140,27 +176,27 @@ http://127.0.0.1:8000/
 
 ---
 
-# Web Frontend: React.js
+## Web Frontend: React.js
 
-## 1. Navigate to the frontend directory
+### 1. Navigate to the frontend directory
 
 ```bash
 cd ../frontend
 ```
 
-## 2. Install dependencies
+### 2. Install dependencies
 
 ```bash
 npm install
 ```
 
-## 3. Set API endpoint in `.env`
+### 3. Set API endpoint in `.env`
 
 ```env
 VITE_API_URL=http://127.0.0.1:8000/
 ```
 
-## 4. Start the development server
+### 4. Start the development server
 
 ```bash
 npm run dev
@@ -169,33 +205,33 @@ npm run dev
 Frontend available at:
 
 ```
-http://localhost:3000/
+http://localhost:5731/
 ```
 
 ---
 
-# Desktop Application: PyQt5
+## Desktop Application: PyQt5
 
-## 1. Navigate to the desktop folder
+### 1. Navigate to the desktop folder
 
 ```bash
 cd ../desktop
 ```
 
-## 2. Create and activate a virtual environment
+### 2. Create and activate a virtual environment
 
 ```bash
 python -m venv venv
 source venv/bin/activate
 ```
 
-## 3. Install dependencies
+### 3. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## 4. Run the desktop application
+### 4. Run the desktop application
 
 ```bash
 python main.py
