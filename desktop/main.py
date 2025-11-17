@@ -15,6 +15,14 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_pdf import PdfPages
 
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.lib import colors
+import tempfile
+import io
+
 
 API_BASE_URL = "http://127.0.0.1:8000/api"
 
@@ -27,6 +35,7 @@ class DesktopApp(QWidget):
         self.csv_data = []
         self.selected_data = None
         self.figures = []  
+        self.current_analysis_data = None
 
         self.setWindowTitle("Chemical Equipment Visualizer (Desktop)")
         self.setGeometry(100, 50, 1400, 900)  
@@ -142,12 +151,20 @@ class DesktopApp(QWidget):
 
         
         export_layout = QHBoxLayout()
-        self.export_pdf_button = QPushButton("Export All Graphs to PDF")
+        self.export_pdf_button = QPushButton("Export Graphs to PDF")
         self.export_pdf_button.clicked.connect(self.export_to_pdf)
         self.export_pdf_button.setEnabled(False)
         self.export_pdf_button.setFixedHeight(40)
         self.export_pdf_button.setStyleSheet("font-size: 14px; font-weight: bold;")
+        
+        self.export_report_button = QPushButton("Generate Comprehensive Report")
+        self.export_report_button.clicked.connect(self.generate_comprehensive_report)
+        self.export_report_button.setEnabled(False)
+        self.export_report_button.setFixedHeight(40)
+        self.export_report_button.setStyleSheet("font-size: 14px; font-weight: bold; background-color: #4CAF50; color: white;")
+        
         export_layout.addWidget(self.export_pdf_button)
+        export_layout.addWidget(self.export_report_button)
         export_layout.addStretch()
         
         export_widget = QWidget()
@@ -396,11 +413,14 @@ class DesktopApp(QWidget):
         self.no_data_label.setFont(QFont("Arial", 14))
         self.analysis_layout.addWidget(self.no_data_label)
         self.selected_data = None
+        self.current_analysis_data = None
         self.figures = []
         self.export_pdf_button.setEnabled(False)
+        self.export_report_button.setEnabled(False)
 
     def display_analysis(self, data):
         self.selected_data = data
+        self.current_analysis_data = data
         self.figures = []  
 
         
@@ -499,6 +519,7 @@ class DesktopApp(QWidget):
 
         
         self.export_pdf_button.setEnabled(True)
+        self.export_report_button.setEnabled(True)
 
         self.analysis_layout.addStretch()
 
@@ -654,6 +675,197 @@ class DesktopApp(QWidget):
             except Exception as e:
                 QMessageBox.critical(self, "Export Error", 
                                    f"Failed to export PDF:\n{str(e)}")
+
+    def generate_comprehensive_report(self):
+        """Generate a comprehensive PDF report with tables and charts"""
+        if not self.current_analysis_data:
+            QMessageBox.warning(self, "Report Error", "No analysis data available!")
+            return
+
+        file_path, _ = QFileDialog.getSaveFileName(
+            self, "Save Comprehensive Report", "", "PDF Files (*.pdf)"
+        )
+
+        if not file_path:
+            return
+
+        try:
+            # Create PDF document
+            doc = SimpleDocTemplate(file_path, pagesize=A4)
+            styles = getSampleStyleSheet()
+            story = []
+
+            # Title
+            title_style = ParagraphStyle(
+                'CustomTitle',
+                parent=styles['Heading1'],
+                fontSize=16,
+                spaceAfter=30,
+                alignment=1,
+            )
+            title = Paragraph("Chemical Equipment Analysis Report", title_style)
+            story.append(title)
+
+            # Report Info
+            current_time = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
+            info_text = f"Generated on: {current_time} | Dataset: {self.current_analysis_data.get('title', 'Unknown')}"
+            story.append(Paragraph(info_text, styles["Normal"]))
+            story.append(Spacer(1, 20))
+
+            # Key Metrics Table
+            story.append(Paragraph("Key Metrics", styles["Heading2"]))
+            metrics_data = [
+                ["Metric", "Value"],
+                ["Total Equipment", str(self.current_analysis_data.get('total_count', 0))],
+                ["Average Flowrate", f"{self.current_analysis_data.get('average_flowrate', 0):.2f}"],
+                ["Average Pressure", f"{self.current_analysis_data.get('average_pressure', 0):.2f}"],
+                ["Average Temperature", f"{self.current_analysis_data.get('average_temperature', 0):.2f}"],
+            ]
+            
+            metrics_table = Table(metrics_data, colWidths=[3*inch, 2*inch])
+            metrics_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 12),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ]))
+            story.append(metrics_table)
+            story.append(Spacer(1, 20))
+
+            # Equipment Type Distribution
+            equipment_dist = self.current_analysis_data.get('equipment_type_distribution', {})
+            if equipment_dist:
+                story.append(Paragraph("Equipment Type Distribution", styles["Heading2"]))
+                
+                dist_data = [["Equipment Type", "Count", "Percentage"]]
+                total = sum(equipment_dist.values())
+                for eq_type, count in equipment_dist.items():
+                    percentage = (count / total) * 100 if total > 0 else 0
+                    dist_data.append([eq_type, str(count), f"{percentage:.1f}%"])
+                
+                dist_table = Table(dist_data, colWidths=[2.5*inch, 1.5*inch, 1.5*inch])
+                dist_table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.lightblue),
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black)
+                ]))
+                story.append(dist_table)
+                story.append(Spacer(1, 20))
+
+            # Save charts as images and add to PDF
+            equipment_list = self.current_analysis_data.get('equipment_list', [])
+            if equipment_list:
+                flowrates = [e.get("Flowrate", 0) for e in equipment_list]
+                pressures = [e.get("Pressure", 0) for e in equipment_list]
+                temperatures = [e.get("Temperature", 0) for e in equipment_list]
+                names = [e.get("Equipment Name", "") for e in equipment_list]
+
+                # Create and save charts as temporary images
+                temp_images = []
+                
+                # Average Metrics Chart
+                fig1 = Figure(figsize=(8, 4))
+                ax1 = fig1.add_subplot(111)
+                bars = ax1.bar(["Flowrate", "Pressure", "Temperature"], 
+                              [self.current_analysis_data.get('average_flowrate', 0), 
+                               self.current_analysis_data.get('average_pressure', 0), 
+                               self.current_analysis_data.get('average_temperature', 0)], 
+                              color=['skyblue', 'lightgreen', 'lightcoral'])
+                ax1.set_title("Average Metrics")
+                ax1.set_ylabel("Value")
+                for bar in bars:
+                    height = bar.get_height()
+                    ax1.text(bar.get_x() + bar.get_width()/2., height,
+                            f'{height:.2f}', ha='center', va='bottom')
+                
+                # Save figure to temporary file
+                temp_file1 = tempfile.NamedTemporaryFile(suffix='.png', delete=False)
+                fig1.savefig(temp_file1.name, dpi=150, bbox_inches='tight')
+                temp_images.append(temp_file1)
+                
+                story.append(Paragraph("Average Metrics Chart", styles["Heading2"]))
+                story.append(Image(temp_file1.name, width=6*inch, height=3*inch))
+                story.append(Spacer(1, 10))
+
+                # Equipment Type Distribution Pie Chart
+                if equipment_dist:
+                    fig2 = Figure(figsize=(6, 4))
+                    ax2 = fig2.add_subplot(111)
+                    ax2.pie(equipment_dist.values(), labels=equipment_dist.keys(), autopct='%1.1f%%')
+                    ax2.set_title("Equipment Type Distribution")
+                    
+                    temp_file2 = tempfile.NamedTemporaryFile(suffix='.png', delete=False)
+                    fig2.savefig(temp_file2.name, dpi=150, bbox_inches='tight')
+                    temp_images.append(temp_file2)
+                    
+                    story.append(Paragraph("Equipment Type Distribution", styles["Heading2"]))
+                    story.append(Image(temp_file2.name, width=5*inch, height=3*inch))
+                    story.append(Spacer(1, 10))
+
+                # Flowrate Chart
+                if len(names) > 0:
+                    fig3 = Figure(figsize=(10, 4))
+                    ax3 = fig3.add_subplot(111)
+                    ax3.plot(names, flowrates, marker='o')
+                    ax3.set_title("Flowrate by Equipment")
+                    ax3.set_ylabel("Flowrate")
+                    ax3.tick_params(axis='x', rotation=45)
+                    fig3.tight_layout()
+                    
+                    temp_file3 = tempfile.NamedTemporaryFile(suffix='.png', delete=False)
+                    fig3.savefig(temp_file3.name, dpi=150, bbox_inches='tight')
+                    temp_images.append(temp_file3)
+                    
+                    story.append(Paragraph("Flowrate Analysis", styles["Heading2"]))
+                    story.append(Image(temp_file3.name, width=7*inch, height=3*inch))
+                    story.append(Spacer(1, 10))
+
+            # Equipment Data Table
+            equipment_list = self.current_analysis_data.get('equipment_list', [])
+            if equipment_list and len(equipment_list) <= 15:
+                story.append(Paragraph("Equipment Data", styles["Heading2"]))
+                
+                if equipment_list:
+                    headers = list(equipment_list[0].keys())
+                    table_data = [headers]
+                    
+                    for item in equipment_list[:10]:
+                        row = [str(item.get(header, '')) for header in headers]
+                        table_data.append(row)
+                    
+                    equipment_table = Table(table_data, repeatRows=1)
+                    equipment_table.setStyle(TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.darkblue),
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('FONTSIZE', (0, 0), (-1, 0), 9),
+                        ('BACKGROUND', (0, 1), (-1, -1), colors.lightgrey),
+                        ('FONTSIZE', (0, 1), (-1, -1), 8),
+                        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                    ]))
+                    story.append(equipment_table)
+
+            # Build PDF
+            doc.build(story)
+            
+            # Clean up temporary files
+            for temp_file in temp_images:
+                try:
+                    os.unlink(temp_file.name)
+                except:
+                    pass
+            
+            QMessageBox.information(self, "Report Generated", 
+                                  f"Comprehensive report saved to:\n{file_path}")
+            
+        except Exception as e:
+            QMessageBox.critical(self, "Report Generation Error", 
+                               f"Failed to generate report:\n{str(e)}")
 
  
 if __name__ == "__main__":
