@@ -200,7 +200,6 @@ interface AnalysisProps {
 }
 
 function Analysis({ data }: AnalysisProps) {
-  console.log(data);
   const equipmentTypes = data.equipment_type_distribution || {};
   const typeLabels = Object.keys(equipmentTypes);
   const typeValues = Object.values(equipmentTypes);
@@ -222,9 +221,9 @@ function Analysis({ data }: AnalysisProps) {
   const paginatedRows = useMemo(() => {
     if (!data.equipment_list) return [];
     const start = (page - 1) * rowsPerPage;
-
     return data.equipment_list.slice(start, start + rowsPerPage);
   }, [page, data.equipment_list]);
+
   const metricLabels = ["Flowrate", "Pressure", "Temperature"];
   const metricValues = [
     data.average_flowrate || 0,
@@ -233,9 +232,38 @@ function Analysis({ data }: AnalysisProps) {
   ];
 
   const equipmentList = data.equipment_list || [];
-
   const totalPages = Math.ceil(equipmentList.length / rowsPerPage);
   const columns = equipmentList[0] ? Object.keys(equipmentList[0]) : [];
+
+  // Enhanced statistics calculations
+  const enhancedStats = useMemo(() => {
+    if (!equipmentList.length) return null;
+
+    const stats = {
+      flowrate: {
+        min: Math.min(...flowrateValues),
+        max: Math.max(...flowrateValues),
+        avg: data.average_flowrate || 0,
+        std: calculateStdDev(flowrateValues),
+      },
+      pressure: {
+        min: Math.min(...pressureValues),
+        max: Math.max(...pressureValues),
+        avg: data.average_pressure || 0,
+        std: calculateStdDev(pressureValues),
+      },
+      temperature: {
+        min: Math.min(...temperatureValues),
+        max: Math.max(...temperatureValues),
+        avg: data.average_temperature || 0,
+        std: calculateStdDev(temperatureValues),
+      },
+      equipmentTypes: typeLabels.length,
+      totalEquipment: data.total_count || 0,
+    };
+
+    return stats;
+  }, [data, equipmentList]);
 
   const chartRefs = {
     avgMetrics: useRef(null),
@@ -245,6 +273,7 @@ function Analysis({ data }: AnalysisProps) {
     flowratePressure: useRef(null),
     flowrateTemperature: useRef(null),
     pressureTemperature: useRef(null),
+    statsTable: useRef(null),
   };
 
   return (
@@ -252,22 +281,74 @@ function Analysis({ data }: AnalysisProps) {
       {/* Summary Section */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mt-6 md:mt-10">
         <Box title="Total Equipment" value={data.total_count || 0} />
-        <Box title="Avg Flowrate" value={data.average_flowrate || 0} />
-        <Box title="Avg Pressure" value={data.average_pressure || 0} />
-        <Box title="Avg Temperature" value={data.average_temperature || 0} />
+        <Box title="Equipment Types" value={typeLabels.length} />
+        <EnhancedBox 
+          title="Flowrate Range" 
+          value={enhancedStats ? `${enhancedStats.flowrate.min.toFixed(1)} - ${enhancedStats.flowrate.max.toFixed(1)}` : "N/A"}
+          subtitle={`Avg: ${(data.average_flowrate || 0).toFixed(1)}`}
+        />
+        <EnhancedBox 
+          title="Temperature Range" 
+          value={enhancedStats ? `${enhancedStats.temperature.min.toFixed(1)} - ${enhancedStats.temperature.max.toFixed(1)}` : "N/A"}
+          subtitle={`Avg: ${(data.average_temperature || 0).toFixed(1)}`}
+        />
       </div>
-      <div className="flex justify-end mb-4">
+
+      {/* Enhanced Statistics Table */}
+      {enhancedStats && (
+        <div ref={chartRefs.statsTable} className="mt-6">
+          <h2 className="text-lg md:text-xl font-semibold mb-4">Detailed Statistics</h2>
+          <div className="overflow-x-auto">
+            <Table removeWrapper aria-label="Detailed Statistics">
+              <TableHeader>
+                <TableColumn>PARAMETER</TableColumn>
+                <TableColumn>MINIMUM</TableColumn>
+                <TableColumn>MAXIMUM</TableColumn>
+                <TableColumn>AVERAGE</TableColumn>
+                <TableColumn>STD DEVIATION</TableColumn>
+                <TableColumn>UNIT</TableColumn>
+              </TableHeader>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="font-semibold">Flowrate</TableCell>
+                  <TableCell>{enhancedStats.flowrate.min.toFixed(2)}</TableCell>
+                  <TableCell>{enhancedStats.flowrate.max.toFixed(2)}</TableCell>
+                  <TableCell>{enhancedStats.flowrate.avg.toFixed(2)}</TableCell>
+                  <TableCell>{enhancedStats.flowrate.std.toFixed(2)}</TableCell>
+                  <TableCell>m³/h</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-semibold">Pressure</TableCell>
+                  <TableCell>{enhancedStats.pressure.min.toFixed(2)}</TableCell>
+                  <TableCell>{enhancedStats.pressure.max.toFixed(2)}</TableCell>
+                  <TableCell>{enhancedStats.pressure.avg.toFixed(2)}</TableCell>
+                  <TableCell>{enhancedStats.pressure.std.toFixed(2)}</TableCell>
+                  <TableCell>bar</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-semibold">Temperature</TableCell>
+                  <TableCell>{enhancedStats.temperature.min.toFixed(2)}</TableCell>
+                  <TableCell>{enhancedStats.temperature.max.toFixed(2)}</TableCell>
+                  <TableCell>{enhancedStats.temperature.avg.toFixed(2)}</TableCell>
+                  <TableCell>{enhancedStats.temperature.std.toFixed(2)}</TableCell>
+                  <TableCell>°C</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      )}
+
+      <div className="flex justify-end my-4">
         <ExportPDFButton chartRefs={chartRefs} data={data} />
       </div>
+
       <Divider className="my-4 md:my-8" />
+
+      {/* Charts Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-        <div
-          ref={chartRefs.avgMetrics}
-          className="p-3 md:p-4 rounded-xl shadow-md"
-        >
-          <h3 className="text-base md:text-lg font-semibold mb-2">
-            Average Metrics
-          </h3>
+        <div ref={chartRefs.avgMetrics} className="p-3 md:p-4 rounded-xl shadow-md">
+          <h3 className="text-base md:text-lg font-semibold mb-2">Average Metrics</h3>
           <div className="h-64 md:h-80">
             <BarGraph
               dataPoints={metricValues}
@@ -277,11 +358,7 @@ function Analysis({ data }: AnalysisProps) {
           </div>
         </div>
 
-        {/* Equipment Type Distribution */}
-        <div
-          ref={chartRefs.avgMetrics}
-          className="p-3 md:p-4 rounded-xl shadow-md"
-        >
+        <div ref={chartRefs.pieChart} className="p-3 md:p-4 rounded-xl shadow-md">
           <h3 className="text-base md:text-lg font-semibold mb-2">
             Equipment Type Distribution
           </h3>
@@ -300,8 +377,8 @@ function Analysis({ data }: AnalysisProps) {
       <Divider className="my-4 md:my-8" />
 
       {/* Line Graphs */}
-      <div ref={chartRefs.avgMetrics} className="space-y-6 md:space-y-8">
-        <div className="p-3 md:p-4 rounded-xl shadow-md">
+      <div className="space-y-6 md:space-y-8">
+        <div ref={chartRefs.flowrateChart} className="p-3 md:p-4 rounded-xl shadow-md">
           <h3 className="text-base md:text-lg font-semibold mb-2">
             Flowrate by Equipment
           </h3>
@@ -314,10 +391,7 @@ function Analysis({ data }: AnalysisProps) {
           </div>
         </div>
 
-        <div
-          ref={chartRefs.flowrateChart}
-          className="p-3 md:p-4 rounded-xl shadow-md"
-        >
+        <div ref={chartRefs.temperatureChart} className="p-3 md:p-4 rounded-xl shadow-md">
           <h3 className="text-base md:text-lg font-semibold mb-2">
             Temperature by Equipment
           </h3>
@@ -331,11 +405,9 @@ function Analysis({ data }: AnalysisProps) {
         </div>
       </div>
 
-      <div
-        ref={chartRefs.flowratePressure}
-        className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-6 md:mt-8"
-      >
-        <div className="p-3 md:p-4 rounded-xl shadow-md">
+      {/* Scatter Plots */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-6 md:mt-8">
+        <div ref={chartRefs.flowratePressure} className="p-3 md:p-4 rounded-xl shadow-md">
           <h3 className="text-sm md:text-base font-semibold mb-2">
             Flowrate vs Pressure
           </h3>
@@ -348,10 +420,7 @@ function Analysis({ data }: AnalysisProps) {
             />
           </div>
         </div>
-        <div
-          ref={chartRefs.flowrateTemperature}
-          className="p-3 md:p-4 rounded-xl shadow-md"
-        >
+        <div ref={chartRefs.flowrateTemperature} className="p-3 md:p-4 rounded-xl shadow-md">
           <h3 className="text-sm md:text-base font-semibold mb-2">
             Flowrate vs Temperature
           </h3>
@@ -364,10 +433,7 @@ function Analysis({ data }: AnalysisProps) {
             />
           </div>
         </div>
-        <div
-          ref={chartRefs.pressureTemperature}
-          className="p-3 md:p-4 rounded-xl shadow-md"
-        >
+        <div ref={chartRefs.pressureTemperature} className="p-3 md:p-4 rounded-xl shadow-md">
           <h3 className="text-sm md:text-base font-semibold mb-2">
             Pressure vs Temperature
           </h3>
@@ -384,8 +450,9 @@ function Analysis({ data }: AnalysisProps) {
 
       <Divider className="my-4 md:my-8" />
 
+      {/* Equipment Data Table */}
       <h2 className="text-lg md:text-xl font-semibold mb-3 mt-6 md:mt-8">
-        Equipment Data
+        Equipment Data ({equipmentList.length} items)
       </h2>
       {equipmentList.length ? (
         <div className="overflow-x-auto">
@@ -405,12 +472,15 @@ function Analysis({ data }: AnalysisProps) {
                 />
               </div>
             }
-            classNames={{ wrapper: "min-h-[222px]" }}
+            classNames={{ 
+              wrapper: "min-h-[222px]",
+              th: "bg-primary-50 font-semibold"
+            }}
           >
             <TableHeader>
               {columns.map((col) => (
                 <TableColumn key={col}>
-                  {col.charAt(0).toUpperCase() + col.slice(1)}
+                  {formatColumnHeader(col)}
                 </TableColumn>
               ))}
             </TableHeader>
@@ -423,7 +493,9 @@ function Analysis({ data }: AnalysisProps) {
                   }
                 >
                   {(columnKey) => (
-                    <TableCell>{getKeyValue(row, columnKey)}</TableCell>
+                    <TableCell className={getCellClassName(columnKey as string, getKeyValue(row, columnKey))}>
+                      {formatCellValue(columnKey as string, getKeyValue(row, columnKey))}
+                    </TableCell>
                   )}
                 </TableRow>
               )}
@@ -435,6 +507,59 @@ function Analysis({ data }: AnalysisProps) {
           No CSV data available
         </p>
       )}
+    </div>
+  );
+}
+
+// Helper functions
+function calculateStdDev(values: number[]): number {
+  const avg = values.reduce((a, b) => a + b, 0) / values.length;
+  const squareDiffs = values.map(value => Math.pow(value - avg, 2));
+  const avgSquareDiff = squareDiffs.reduce((a, b) => a + b, 0) / values.length;
+  return Math.sqrt(avgSquareDiff);
+}
+
+function formatColumnHeader(column: string): string {
+  const formatMap: { [key: string]: string } = {
+    'Equipment Name': 'Equipment',
+    'Flowrate': 'Flowrate (m³/h)',
+    'Pressure': 'Pressure (bar)',
+    'Temperature': 'Temperature (°C)',
+  };
+  return formatMap[column] || column;
+}
+
+function formatCellValue(column: string, value: any): string {
+  if (typeof value === 'number') {
+    if (['Flowrate', 'Pressure', 'Temperature'].includes(column)) {
+      return value.toFixed(2);
+    }
+    return value.toString();
+  }
+  return value;
+}
+
+function getCellClassName(column: string, value: any): string {
+  if (typeof value === 'number') {
+    if (column === 'Flowrate' && value > 100) return 'text-success-600 font-medium';
+    if (column === 'Temperature' && value > 80) return 'text-warning-600 font-medium';
+    if (column === 'Pressure' && value > 50) return 'text-danger-600 font-medium';
+  }
+  return '';
+}
+
+interface EnhancedBoxProps {
+  title: string;
+  value: string;
+  subtitle?: string;
+}
+
+function EnhancedBox({ title, value, subtitle }: EnhancedBoxProps) {
+  return (
+    <div className="p-2 md:p-4 rounded-xl shadow-md text-center">
+      <h2 className="text-sm md:text-lg">{title}</h2>
+      <p className="text-lg md:text-2xl font-semibold">{value}</p>
+      {subtitle && <p className="text-xs md:text-sm text-gray-600 mt-1">{subtitle}</p>}
     </div>
   );
 }
@@ -452,13 +577,6 @@ function Box({ title, value }: BoxProps) {
     </div>
   );
 }
-
-interface HistoryProps {
-  history: HistoryItem[];
-  onLoad: (id: number) => void;
-  onDelete: (id: number) => void;
-}
-
 function History({ history, onLoad, onDelete }: HistoryProps) {
   if (!history.length)
     return <p className="text-center py-4">No history yet.</p>;
