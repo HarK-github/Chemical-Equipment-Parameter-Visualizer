@@ -3,7 +3,11 @@
 # Chemical-Equipment-Parameter-Visualizer
 
 </div>
-
+<br>
+<br>
+<div align="center">
+  Deployed Link: <a href="https://chemical-equipment-parameter-visualizer-1-lmh9.onrender.com/"> https://chemical-equipment-parameter-visualizer-1-lmh9.onrender.com/</a>
+</div>
 
 ## Project Overview
 
@@ -237,6 +241,19 @@ pip install -r requirements.txt
 python main.py
 ```
 
+### Alternative:
+
+Go to root directory of the project,create and activate a virtual environment
+
+```bash
+python -m venv venv
+source venv/bin/activate
+```
+
+Now run
+
+
+
 ---
 
 # Features
@@ -246,8 +263,7 @@ python main.py
 * Visualization (Chart.js for web, Matplotlib for desktop)
 * Storage of last five uploaded datasets
 * PDF report generation
-* Basic user authentication
-* SQLite persistence
+* Basic user authentication 
 
 ---
 
