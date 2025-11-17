@@ -504,7 +504,7 @@ class DesktopApp(QWidget):
 
     def create_summary_box(self, title, value):
         box = QWidget()
-        box.setStyleSheet("background-color: 
+        box.setStyleSheet("background-color: #f0f0f0; border-radius: 10px; padding: 15px; margin: 5px;")
         box.setFixedSize(200, 80)
         layout = QVBoxLayout()
 
