@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Tabs, Tab } from "@heroui/tabs";
 import { Divider } from "@heroui/divider";
@@ -635,6 +636,12 @@ function Box({ title, value }: BoxProps) {
     </div>
   );
 }
+interface HistoryProps {
+  history: HistoryItem[];
+  onLoad: (id: number) => void;
+  onDelete: (id: number) => void;
+}
+
 function History({ history, onLoad, onDelete }: HistoryProps) {
   if (!history.length)
     return <p className="text-center py-4">No history yet.</p>;
