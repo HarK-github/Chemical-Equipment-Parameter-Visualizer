@@ -221,6 +221,7 @@ function Analysis({ data }: AnalysisProps) {
   const paginatedRows = useMemo(() => {
     if (!data.equipment_list) return [];
     const start = (page - 1) * rowsPerPage;
+
     return data.equipment_list.slice(start, start + rowsPerPage);
   }, [page, data.equipment_list]);
 
@@ -282,22 +283,32 @@ function Analysis({ data }: AnalysisProps) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mt-6 md:mt-10">
         <Box title="Total Equipment" value={data.total_count || 0} />
         <Box title="Equipment Types" value={typeLabels.length} />
-        <EnhancedBox 
-          title="Flowrate Range" 
-          value={enhancedStats ? `${enhancedStats.flowrate.min.toFixed(1)} - ${enhancedStats.flowrate.max.toFixed(1)}` : "N/A"}
+        <EnhancedBox
           subtitle={`Avg: ${(data.average_flowrate || 0).toFixed(1)}`}
+          title="Flowrate Range"
+          value={
+            enhancedStats
+              ? `${enhancedStats.flowrate.min.toFixed(1)} - ${enhancedStats.flowrate.max.toFixed(1)}`
+              : "N/A"
+          }
         />
-        <EnhancedBox 
-          title="Temperature Range" 
-          value={enhancedStats ? `${enhancedStats.temperature.min.toFixed(1)} - ${enhancedStats.temperature.max.toFixed(1)}` : "N/A"}
+        <EnhancedBox
           subtitle={`Avg: ${(data.average_temperature || 0).toFixed(1)}`}
+          title="Temperature Range"
+          value={
+            enhancedStats
+              ? `${enhancedStats.temperature.min.toFixed(1)} - ${enhancedStats.temperature.max.toFixed(1)}`
+              : "N/A"
+          }
         />
       </div>
 
       {/* Enhanced Statistics Table */}
       {enhancedStats && (
         <div ref={chartRefs.statsTable} className="mt-6">
-          <h2 className="text-lg md:text-xl font-semibold mb-4">Detailed Statistics</h2>
+          <h2 className="text-lg md:text-xl font-semibold mb-4">
+            Detailed Statistics
+          </h2>
           <div className="overflow-x-auto">
             <Table removeWrapper aria-label="Detailed Statistics">
               <TableHeader>
@@ -327,10 +338,18 @@ function Analysis({ data }: AnalysisProps) {
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-semibold">Temperature</TableCell>
-                  <TableCell>{enhancedStats.temperature.min.toFixed(2)}</TableCell>
-                  <TableCell>{enhancedStats.temperature.max.toFixed(2)}</TableCell>
-                  <TableCell>{enhancedStats.temperature.avg.toFixed(2)}</TableCell>
-                  <TableCell>{enhancedStats.temperature.std.toFixed(2)}</TableCell>
+                  <TableCell>
+                    {enhancedStats.temperature.min.toFixed(2)}
+                  </TableCell>
+                  <TableCell>
+                    {enhancedStats.temperature.max.toFixed(2)}
+                  </TableCell>
+                  <TableCell>
+                    {enhancedStats.temperature.avg.toFixed(2)}
+                  </TableCell>
+                  <TableCell>
+                    {enhancedStats.temperature.std.toFixed(2)}
+                  </TableCell>
                   <TableCell>°C</TableCell>
                 </TableRow>
               </TableBody>
@@ -347,8 +366,13 @@ function Analysis({ data }: AnalysisProps) {
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-        <div ref={chartRefs.avgMetrics} className="p-3 md:p-4 rounded-xl shadow-md">
-          <h3 className="text-base md:text-lg font-semibold mb-2">Average Metrics</h3>
+        <div
+          ref={chartRefs.avgMetrics}
+          className="p-3 md:p-4 rounded-xl shadow-md"
+        >
+          <h3 className="text-base md:text-lg font-semibold mb-2">
+            Average Metrics
+          </h3>
           <div className="h-64 md:h-80">
             <BarGraph
               dataPoints={metricValues}
@@ -358,7 +382,10 @@ function Analysis({ data }: AnalysisProps) {
           </div>
         </div>
 
-        <div ref={chartRefs.pieChart} className="p-3 md:p-4 rounded-xl shadow-md">
+        <div
+          ref={chartRefs.pieChart}
+          className="p-3 md:p-4 rounded-xl shadow-md"
+        >
           <h3 className="text-base md:text-lg font-semibold mb-2">
             Equipment Type Distribution
           </h3>
@@ -378,7 +405,10 @@ function Analysis({ data }: AnalysisProps) {
 
       {/* Line Graphs */}
       <div className="space-y-6 md:space-y-8">
-        <div ref={chartRefs.flowrateChart} className="p-3 md:p-4 rounded-xl shadow-md">
+        <div
+          ref={chartRefs.flowrateChart}
+          className="p-3 md:p-4 rounded-xl shadow-md"
+        >
           <h3 className="text-base md:text-lg font-semibold mb-2">
             Flowrate by Equipment
           </h3>
@@ -391,7 +421,10 @@ function Analysis({ data }: AnalysisProps) {
           </div>
         </div>
 
-        <div ref={chartRefs.temperatureChart} className="p-3 md:p-4 rounded-xl shadow-md">
+        <div
+          ref={chartRefs.temperatureChart}
+          className="p-3 md:p-4 rounded-xl shadow-md"
+        >
           <h3 className="text-base md:text-lg font-semibold mb-2">
             Temperature by Equipment
           </h3>
@@ -407,7 +440,10 @@ function Analysis({ data }: AnalysisProps) {
 
       {/* Scatter Plots */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-6 md:mt-8">
-        <div ref={chartRefs.flowratePressure} className="p-3 md:p-4 rounded-xl shadow-md">
+        <div
+          ref={chartRefs.flowratePressure}
+          className="p-3 md:p-4 rounded-xl shadow-md"
+        >
           <h3 className="text-sm md:text-base font-semibold mb-2">
             Flowrate vs Pressure
           </h3>
@@ -420,7 +456,10 @@ function Analysis({ data }: AnalysisProps) {
             />
           </div>
         </div>
-        <div ref={chartRefs.flowrateTemperature} className="p-3 md:p-4 rounded-xl shadow-md">
+        <div
+          ref={chartRefs.flowrateTemperature}
+          className="p-3 md:p-4 rounded-xl shadow-md"
+        >
           <h3 className="text-sm md:text-base font-semibold mb-2">
             Flowrate vs Temperature
           </h3>
@@ -433,7 +472,10 @@ function Analysis({ data }: AnalysisProps) {
             />
           </div>
         </div>
-        <div ref={chartRefs.pressureTemperature} className="p-3 md:p-4 rounded-xl shadow-md">
+        <div
+          ref={chartRefs.pressureTemperature}
+          className="p-3 md:p-4 rounded-xl shadow-md"
+        >
           <h3 className="text-sm md:text-base font-semibold mb-2">
             Pressure vs Temperature
           </h3>
@@ -472,16 +514,14 @@ function Analysis({ data }: AnalysisProps) {
                 />
               </div>
             }
-            classNames={{ 
+            classNames={{
               wrapper: "min-h-[222px]",
-              th: "bg-primary-50 font-semibold"
+              th: "bg-primary-50 font-semibold",
             }}
           >
             <TableHeader>
               {columns.map((col) => (
-                <TableColumn key={col}>
-                  {formatColumnHeader(col)}
-                </TableColumn>
+                <TableColumn key={col}>{formatColumnHeader(col)}</TableColumn>
               ))}
             </TableHeader>
 
@@ -493,8 +533,16 @@ function Analysis({ data }: AnalysisProps) {
                   }
                 >
                   {(columnKey) => (
-                    <TableCell className={getCellClassName(columnKey as string, getKeyValue(row, columnKey))}>
-                      {formatCellValue(columnKey as string, getKeyValue(row, columnKey))}
+                    <TableCell
+                      className={getCellClassName(
+                        columnKey as string,
+                        getKeyValue(row, columnKey),
+                      )}
+                    >
+                      {formatCellValue(
+                        columnKey as string,
+                        getKeyValue(row, columnKey),
+                      )}
                     </TableCell>
                   )}
                 </TableRow>
@@ -514,38 +562,46 @@ function Analysis({ data }: AnalysisProps) {
 // Helper functions
 function calculateStdDev(values: number[]): number {
   const avg = values.reduce((a, b) => a + b, 0) / values.length;
-  const squareDiffs = values.map(value => Math.pow(value - avg, 2));
+  const squareDiffs = values.map((value) => Math.pow(value - avg, 2));
   const avgSquareDiff = squareDiffs.reduce((a, b) => a + b, 0) / values.length;
+
   return Math.sqrt(avgSquareDiff);
 }
 
 function formatColumnHeader(column: string): string {
   const formatMap: { [key: string]: string } = {
-    'Equipment Name': 'Equipment',
-    'Flowrate': 'Flowrate (m³/h)',
-    'Pressure': 'Pressure (bar)',
-    'Temperature': 'Temperature (°C)',
+    "Equipment Name": "Equipment",
+    Flowrate: "Flowrate (m³/h)",
+    Pressure: "Pressure (bar)",
+    Temperature: "Temperature (°C)",
   };
+
   return formatMap[column] || column;
 }
 
 function formatCellValue(column: string, value: any): string {
-  if (typeof value === 'number') {
-    if (['Flowrate', 'Pressure', 'Temperature'].includes(column)) {
+  if (typeof value === "number") {
+    if (["Flowrate", "Pressure", "Temperature"].includes(column)) {
       return value.toFixed(2);
     }
+
     return value.toString();
   }
+
   return value;
 }
 
 function getCellClassName(column: string, value: any): string {
-  if (typeof value === 'number') {
-    if (column === 'Flowrate' && value > 100) return 'text-success-600 font-medium';
-    if (column === 'Temperature' && value > 80) return 'text-warning-600 font-medium';
-    if (column === 'Pressure' && value > 50) return 'text-danger-600 font-medium';
+  if (typeof value === "number") {
+    if (column === "Flowrate" && value > 100)
+      return "text-success-600 font-medium";
+    if (column === "Temperature" && value > 80)
+      return "text-warning-600 font-medium";
+    if (column === "Pressure" && value > 50)
+      return "text-danger-600 font-medium";
   }
-  return '';
+
+  return "";
 }
 
 interface EnhancedBoxProps {
@@ -559,7 +615,9 @@ function EnhancedBox({ title, value, subtitle }: EnhancedBoxProps) {
     <div className="p-2 md:p-4 rounded-xl shadow-md text-center">
       <h2 className="text-sm md:text-lg">{title}</h2>
       <p className="text-lg md:text-2xl font-semibold">{value}</p>
-      {subtitle && <p className="text-xs md:text-sm text-gray-600 mt-1">{subtitle}</p>}
+      {subtitle && (
+        <p className="text-xs md:text-sm text-gray-600 mt-1">{subtitle}</p>
+      )}
     </div>
   );
 }
