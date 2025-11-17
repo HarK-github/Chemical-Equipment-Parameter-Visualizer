@@ -49,19 +49,23 @@ export default function AuthForm({ method }: AuthFormProps) {
       setAction("Success");
     } catch (error: any) {
       if (error.response) {
-        if (error.response.status === 401) {
+        if (error.response.status === 400) {
+          const data = error.response.data;
+
+          if (data.username) {
+            setAction(`Username already exists: ${data.username[0]}`);
+          } else {
+            setAction("Invalid input data.");
+          }
+        } else if (error.response.status === 401) {
           setAction("Invalid username or password.");
-        } else if (error.response.status === 400) {
-          setAction("Invalid input data.");
         } else if (error.response.status >= 500) {
           setAction("Server error. Please try again later.");
         } else {
           setAction("Request failed. Please try again.");
         }
-        // No response (server down)
       } else if (error.request) {
         setAction("Cannot reach server. Please check your connection.");
-        // Unknown error
       } else {
         setAction("Unexpected error occurred.");
       }

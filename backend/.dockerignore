@@ -1,2 +1,5 @@
 venv
 csv_files
+/backend/__pycache__
+/api/__pycache__
+/migrations

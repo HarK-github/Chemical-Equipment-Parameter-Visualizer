@@ -93,25 +93,40 @@ const BarGraph = ({ labels, dataPoints, label }: BarGraphProps) => {
   return <Bar data={data} options={options} />;
 };
 
-// Pie Chart Component
+function generateColors(n: number) {
+  const colors: string[] = [];
+  const hueStep = 360 / n;
+
+  for (let i = 0; i < n; i++) {
+    colors.push(`hsl(${i * hueStep}, 70%, 60%)`);
+  }
+
+  return colors;
+}
+
 const PieGraph = ({ labels, dataPoints }: PieGraphProps) => {
+  const backgroundColor = generateColors(labels.length);
+
   const data = {
     labels,
     datasets: [
       {
         label: "Distribution",
         data: dataPoints,
-        backgroundColor: [
-          "rgba(255,99,132,0.6)",
-          "rgba(54,162,235,0.6)",
-          "rgba(255,206,86,0.6)",
-          "rgba(75,192,192,0.6)",
-        ],
+        backgroundColor,
       },
     ],
   };
 
-  return <Pie data={data} />;
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: { position: "top" as const },
+      tooltip: { enabled: true },
+    },
+  };
+
+  return <Pie data={data} options={options} />;
 };
 
 // Scatter Chart Component

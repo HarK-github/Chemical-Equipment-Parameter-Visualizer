@@ -38,6 +38,7 @@
     "@tailwindcss/vite": "4.1.11",
     "axios": "^1.13.2",
     "chart.js": "^4.5.1",
+    "chartjs-chart-box-and-violin-plot": "^4.0.0",
     "clsx": "2.1.1",
     "framer-motion": "11.18.2",
     "html2canvas": "^1.4.1",
