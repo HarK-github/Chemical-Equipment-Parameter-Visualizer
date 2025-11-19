@@ -29,79 +29,93 @@ export interface ExportPDFButtonProps {
     average_temperature?: number;
     equipment_type_distribution?: Record<string, number>;
     equipment_list?: Array<Record<string, any>>;
+    title?: string;
   };
   chartRefs?: ChartRefs;
 }
 
-
-export function ExportPDFButton({ data, chartRefs,user }: ExportPDFButtonProps) {
+export function ExportPDFButton({
+  data,
+  chartRefs,
+  user,
+}: ExportPDFButtonProps) {
   const generatePDF = async () => {
     try {
-     const doc = new jsPDF("p", "mm", "a4");
+      const doc = new jsPDF("p", "mm", "a4");
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
       let yPosition = 20;
 
-      // Title
       doc.setFontSize(20);
       doc.setFont("helvetica", "bold");
-      doc.text("Equipment Analysis Report", pageWidth / 2, yPosition, {
+      doc.text("Chemical Equipment Analysis Report", pageWidth / 2, yPosition, {
         align: "center",
       });
       yPosition += 10;
 
-      // User Information
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      const currentTime = new Date().toLocaleString();
+      const datasetTitle = data?.title || "Unknown Dataset";
+
+      doc.text(
+        `Generated on: ${currentTime} | Dataset: ${datasetTitle}`,
+        pageWidth / 2,
+        yPosition,
+        { align: "center" },
+      );
+      yPosition += 15;
+
       if (user) {
-        doc.setFontSize(12);
+        doc.setFontSize(11);
         doc.setFont("helvetica", "bold");
         doc.text("Prepared For:", 15, yPosition);
         yPosition += 7;
-
         doc.setFont("helvetica", "normal");
-
-        
         doc.text(`Username: ${user.username}`, 15, yPosition);
-        yPosition += 6;
-
+        yPosition += 10;
       }
 
-      // Date
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "normal");
-      doc.text(
-        `Generated: ${new Date().toLocaleString()}`,
-        pageWidth / 2,
-        yPosition,
-        { align: "center" }
-      );
-      yPosition += 10;
-      // Summary Statistics
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
-      doc.text("Summary Statistics", 15, yPosition);
-      yPosition += 10;
+      doc.text("Key Metrics", 15, yPosition);
+      yPosition += 8;
 
       autoTable(doc, {
         startY: yPosition,
         head: [["Metric", "Value"]],
         body: [
           ["Total Equipment", data?.total_count?.toString() || "0"],
-          ["Average Flowrate", (data?.average_flowrate || 0).toFixed(2)],
-          ["Average Pressure", (data?.average_pressure || 0).toFixed(2)],
-          ["Average Temperature", (data?.average_temperature || 0).toFixed(2)],
+          ["Average Flowrate", `${(data?.average_flowrate || 0).toFixed(2)}`],
+          ["Average Pressure", `${(data?.average_pressure || 0).toFixed(2)}`],
+          [
+            "Average Temperature",
+            `${(data?.average_temperature || 0).toFixed(2)}`,
+          ],
         ],
-        margin: { left: 15 },
-        headStyles: { fillColor: [59, 130, 246] },
+        margin: { left: 15, right: 15 },
+        headStyles: {
+          fillColor: [128, 128, 128],
+          textColor: [255, 255, 255],
+          fontStyle: "bold",
+        },
+        bodyStyles: { fillColor: [245, 245, 220] },
+        styles: {
+          fontSize: 11,
+          cellPadding: 6,
+          lineColor: [0, 0, 0],
+          lineWidth: 0.5,
+        },
+        theme: "grid",
       });
 
       yPosition = (doc as any).lastAutoTable.finalY + 15;
 
-      // Equipment Type Distribution
       if (
         data?.equipment_type_distribution &&
         Object.keys(data.equipment_type_distribution).length > 0
       ) {
-        if (yPosition > pageHeight - 40) {
+        if (yPosition > pageHeight - 60) {
           doc.addPage();
           yPosition = 20;
         }
@@ -109,107 +123,270 @@ export function ExportPDFButton({ data, chartRefs,user }: ExportPDFButtonProps) 
         doc.setFontSize(14);
         doc.setFont("helvetica", "bold");
         doc.text("Equipment Type Distribution", 15, yPosition);
-        yPosition += 10;
+        yPosition += 8;
 
-        const equipmentTypes = Object.entries(
+        const total = Object.values(data.equipment_type_distribution).reduce(
+          (sum, count) => sum + count,
+          0,
+        );
+        const distributionData = Object.entries(
           data.equipment_type_distribution,
-        ).map(([type, count]) => [type, count?.toString() || "0"]);
+        ).map(([type, count]) => [
+          type,
+          count.toString(),
+          total > 0 ? `${((count / total) * 100).toFixed(1)}%` : "0%",
+        ]);
 
         autoTable(doc, {
           startY: yPosition,
-          head: [["Equipment Type", "Count"]],
-          body: equipmentTypes,
-          margin: { left: 15 },
-          headStyles: { fillColor: [59, 130, 246] },
+          head: [["Equipment Type", "Count", "Percentage"]],
+          body: distributionData,
+          margin: { left: 15, right: 15 },
+          headStyles: {
+            fillColor: [173, 216, 230],
+            textColor: [0, 0, 0],
+          },
+          styles: {
+            fontSize: 10,
+            cellPadding: 5,
+          },
+          theme: "grid",
         });
 
         yPosition = (doc as any).lastAutoTable.finalY + 15;
       }
 
-      // Add charts as images
       if (chartRefs) {
         const charts = [
-          { ref: chartRefs.avgMetrics, title: "Average Metrics" },
-          { ref: chartRefs.pieChart, title: "Equipment Type Distribution" },
-          { ref: chartRefs.flowrateChart, title: "Flowrate by Equipment" },
+          {
+            ref: chartRefs.avgMetrics,
+            title: "Average Metrics Chart",
+            size: "medium",
+          },
+          {
+            ref: chartRefs.pieChart,
+            title: "Equipment Type Distribution",
+            size: "medium",
+          },
+          {
+            ref: chartRefs.flowrateChart,
+            title: "Flowrate Analysis",
+            size: "large",
+          },
           {
             ref: chartRefs.temperatureChart,
-            title: "Temperature by Equipment",
+            title: "Temperature Analysis",
+            size: "large",
           },
           {
             ref: chartRefs.flowratePressure,
             title: "Flowrate vs Pressure",
-            small: true,
+            size: "small",
           },
           {
             ref: chartRefs.flowrateTemperature,
             title: "Flowrate vs Temperature",
-            small: true,
+            size: "small",
           },
           {
             ref: chartRefs.pressureTemperature,
             title: "Pressure vs Temperature",
-            small: true,
+            size: "small",
           },
         ].filter((chart) => chart.ref?.current);
 
         for (const chart of charts) {
-          doc.addPage();
-          yPosition = 20;
+          if (yPosition > pageHeight - 100) {
+            doc.addPage();
+            yPosition = 20;
+          }
 
-          doc.setFontSize(14);
+          doc.setFontSize(12);
           doc.setFont("helvetica", "bold");
-          doc.text(chart.title, pageWidth / 2, yPosition, { align: "center" });
-          yPosition += 15;
+          doc.text(chart.title, 15, yPosition);
+          yPosition += 8;
+
+          let chartCaptured = false;
 
           try {
+            await new Promise((resolve) => setTimeout(resolve, 500));
+
             const canvas = await html2canvas(chart.ref!.current!, {
-              scale: 2,
+              scale: 1.5, 
               backgroundColor: "#ffffff",
               useCORS: true,
-              allowTaint: true,
+              allowTaint: false, 
               logging: false,
+              onclone: (clonedDoc) => {
+                const chartElement = clonedDoc.querySelector(
+                  `[data-chart="${chart.title}"]`,
+                );
+
+                if (chartElement) {
+                  (chartElement as HTMLElement).style.opacity = "1";
+                }
+              },
             });
 
-            const imgData = canvas.toDataURL("image/png");
-            const imgWidth = chart.small ? pageWidth - 60 : pageWidth - 40;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            const finalImgHeight = Math.min(
-              imgHeight,
-              pageHeight - yPosition - 20,
-            );
+            let imgWidth, imgHeight;
+            const maxWidth = pageWidth - 30;
+            const aspectRatio = canvas.height / canvas.width;
+
+            switch (chart.size) {
+              case "small":
+                imgWidth = maxWidth * 0.6;
+                break;
+              case "medium":
+                imgWidth = maxWidth * 0.8;
+                break;
+              case "large":
+              default:
+                imgWidth = maxWidth;
+                break;
+            }
+
+            imgHeight = imgWidth * aspectRatio;
+
+            const maxHeight = pageHeight - yPosition - 20;
+
+            if (imgHeight > maxHeight) {
+              imgHeight = maxHeight;
+              imgWidth = imgHeight / aspectRatio;
+            }
+
+            const xPosition = (pageWidth - imgWidth) / 2;
+
+            const imgData = canvas.toDataURL("image/png", 0.8);
 
             doc.addImage(
               imgData,
               "PNG",
-              chart.small ? 30 : 20,
+              xPosition,
               yPosition,
               imgWidth,
-              finalImgHeight,
+              imgHeight,
             );
+
+            yPosition += imgHeight + 15;
+            chartCaptured = true;
           } catch (error) {
             console.error(`Failed to capture ${chart.title}:`, error);
+            chartCaptured = false;
+          }
+
+          if (!chartCaptured) {
             doc.setFontSize(10);
-            doc.setFont("helvetica", "normal");
-            doc.text("Chart capture failed", 20, yPosition);
+            doc.setFont("helvetica", "italic");
+            doc.text(
+              "Chart preview unavailable - refer to web application for interactive charts",
+              15,
+              yPosition,
+            );
+            yPosition += 8;
+
+            if (chart.title.includes("Average Metrics")) {
+              const avgData = [
+                ["Metric", "Value"],
+                ["Flowrate", `${data?.average_flowrate?.toFixed(2)}`],
+                ["Pressure", `${data?.average_pressure?.toFixed(2)}`],
+                ["Temperature", `${data?.average_temperature?.toFixed(2)}`],
+              ];
+
+              autoTable(doc, {
+                startY: yPosition,
+                body: avgData,
+                margin: { left: 15 },
+                styles: { fontSize: 9, cellPadding: 3 },
+                theme: "grid",
+              });
+              yPosition = (doc as any).lastAutoTable.finalY + 10;
+            } else if (
+              chart.title.includes("Equipment Type Distribution") &&
+              data?.equipment_type_distribution
+            ) {
+              const distData = Object.entries(
+                data.equipment_type_distribution,
+              ).map(([type, count]) => [type, count.toString()]);
+
+              autoTable(doc, {
+                startY: yPosition,
+                head: [["Equipment Type", "Count"]],
+                body: distData,
+                margin: { left: 15 },
+                styles: { fontSize: 9, cellPadding: 3 },
+                theme: "grid",
+              });
+              yPosition = (doc as any).lastAutoTable.finalY + 10;
+            } else if (
+              chart.title.includes("Flowrate Analysis") &&
+              data?.equipment_list
+            ) {
+              const flowrateData = data.equipment_list
+                .slice(0, 10)
+                .map((item) => [
+                  item.Equipment_Name || item.name || "Unknown",
+                  item.Flowrate?.toFixed(2) || "0.00",
+                ]);
+
+              autoTable(doc, {
+                startY: yPosition,
+                head: [["Equipment", "Flowrate"]],
+                body: flowrateData,
+                margin: { left: 15 },
+                styles: { fontSize: 8, cellPadding: 2 },
+                theme: "grid",
+              });
+              yPosition = (doc as any).lastAutoTable.finalY + 10;
+            } else if (
+              chart.title.includes("Temperature Analysis") &&
+              data?.equipment_list
+            ) {
+              const tempData = data.equipment_list
+                .slice(0, 10)
+                .map((item) => [
+                  item.Equipment_Name || item.name || "Unknown",
+                  item.Temperature?.toFixed(2) || "0.00",
+                ]);
+
+              autoTable(doc, {
+                startY: yPosition,
+                head: [["Equipment", "Temperature"]],
+                body: tempData,
+                margin: { left: 15 },
+                styles: { fontSize: 8, cellPadding: 2 },
+                theme: "grid",
+              });
+              yPosition = (doc as any).lastAutoTable.finalY + 10;
+            }
+
+            yPosition += 5;
           }
         }
       }
 
-      // Equipment Data Table
       if (data?.equipment_list && data.equipment_list.length > 0) {
-        doc.addPage();
-        yPosition = 20;
+        if (yPosition > pageHeight - 100) {
+          doc.addPage();
+          yPosition = 20;
+        }
 
         doc.setFontSize(14);
         doc.setFont("helvetica", "bold");
-        doc.text("Equipment Data", 15, yPosition);
-        yPosition += 10;
+        doc.text("Equipment Data Summary", 15, yPosition);
+        yPosition += 8;
 
-        const columns = Object.keys(data.equipment_list[0]);
-        const rows = data.equipment_list.map((item) =>
-          columns.map((col) => {
-            const value = item[col];
+        const equipmentToShow = data.equipment_list.slice(0, 15);
+        const headers = Object.keys(equipmentToShow[0])
+          .filter(
+            (key) =>
+              !key.toLowerCase().includes("id") &&
+              key !== "created_at" &&
+              key !== "updated_at",
+          )
+          .slice(0, 6);
+        const tableData = equipmentToShow.map((item) =>
+          headers.map((header) => {
+            const value = item[header];
 
             if (value === null || value === undefined) return "N/A";
             if (typeof value === "number") return value.toFixed(2);
@@ -220,26 +397,62 @@ export function ExportPDFButton({ data, chartRefs,user }: ExportPDFButtonProps) 
 
         autoTable(doc, {
           startY: yPosition,
-          head: [columns],
-          body: rows,
-          margin: { left: 15 },
-          headStyles: { fillColor: [59, 130, 246] },
-          styles: { fontSize: 8, cellPadding: 2 },
-          columnStyles: columns.reduce(
-            (acc: Record<number, any>, _col, idx) => {
-              acc[idx] = { cellWidth: "auto", minCellHeight: 8 };
-
-              return acc;
-            },
-            {},
-          ),
-          pageBreak: "auto",
-          tableWidth: "wrap",
+          head: [headers],
+          body: tableData,
+          margin: { left: 15, right: 15 },
+          headStyles: {
+            fillColor: [25, 25, 112],
+            textColor: [255, 255, 255],
+            fontStyle: "bold",
+          },
+          bodyStyles: { fillColor: [211, 211, 211] },
+          styles: {
+            fontSize: 7,
+            cellPadding: 3,
+            lineColor: [0, 0, 0],
+            lineWidth: 0.3,
+          },
+          theme: "grid",
+          tableWidth: "auto",
         });
+
+        if (data.equipment_list.length > 15) {
+          doc.setFontSize(8);
+          doc.setFont("helvetica", "italic");
+          doc.text(
+            `Note: Showing first 15 of ${data.equipment_list.length} equipment items`,
+            15,
+            (doc as any).lastAutoTable.finalY + 5,
+          );
+        }
       }
 
-      // Save PDF
-      const fileName = `Equipment_Analysis_${new Date()
+      doc.addPage();
+      yPosition = 20;
+
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Report Information", pageWidth / 2, yPosition, {
+        align: "center",
+      });
+      yPosition += 15;
+
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      const infoLines = [
+        "Generated by: Chemical Equipment Analysis Tool By HarshitKandpal",
+      ];
+
+      infoLines.forEach((line) => {
+        if (yPosition > pageHeight - 20) {
+          doc.addPage();
+          yPosition = 20;
+        }
+        doc.text(line, 20, yPosition);
+        yPosition += 5;
+      });
+
+      const fileName = `Chemical_Equipment_Analysis_${new Date()
         .toISOString()
         .slice(0, 10)}.pdf`;
 
@@ -252,16 +465,15 @@ export function ExportPDFButton({ data, chartRefs,user }: ExportPDFButtonProps) 
 
   return (
     <Button
-      className="w-full md:w-auto"
+      className="w-full md:w-auto bg-blue-600 text-white hover:bg-blue-700"
       isDisabled={!data}
       onPress={generatePDF}
     >
-      Export PDF Report
+      Export Comprehensive PDF Report
     </Button>
   );
 }
 
-// Hook for chart references
 export function useChartRefs(): ChartRefs {
   const avgMetrics = React.useRef<HTMLDivElement>(null);
   const pieChart = React.useRef<HTMLDivElement>(null);

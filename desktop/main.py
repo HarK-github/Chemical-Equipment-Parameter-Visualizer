@@ -736,7 +736,6 @@ class DesktopApp(QWidget):
             story.append(metrics_table)
             story.append(Spacer(1, 20))
 
-            # Equipment Type Distribution
             equipment_dist = self.current_analysis_data.get('equipment_type_distribution', {})
             if equipment_dist:
                 story.append(Paragraph("Equipment Type Distribution", styles["Heading2"]))

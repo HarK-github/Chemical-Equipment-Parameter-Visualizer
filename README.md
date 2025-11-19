@@ -19,6 +19,7 @@ The system includes:
 * React.js web frontend
 * PyQt5 desktop application
 
+The dekstop and web application use the same backend server.
 --- 
 
 ## 📁File Structure
@@ -85,8 +86,8 @@ This section describes how to run the complete application stack using Docker Co
 
 ## 1. Prerequisites
 
-* Docker (version 24 or later recommended)
-* Docker Compose (version 2 or later)
+* Docker
+* Docker Compose 
 * Git
 
 ---
@@ -134,8 +135,7 @@ http://localhost:5173/
 ---
 
 # 🛠 Manual Setup 
-This section explains how to run the backend, web frontend, and desktop application directly on your local machine.
-
+This section explains how to run the backend, web frontend, and desktop application directly on your local machine without using docker container
 ---
 
 ## Backend: Django
@@ -185,7 +185,7 @@ http://127.0.0.1:8000/
 ### 1. Navigate to the frontend directory
 
 ```bash
-cd ../frontend
+cd ./frontend
 ```
 
 ### 2. Install dependencies
@@ -219,7 +219,7 @@ http://localhost:5731/
 ### 1. Navigate to the desktop folder
 
 ```bash
-cd ../desktop
+cd ./desktop
 ```
 
 ### 2. Create and activate a virtual environment
