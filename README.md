@@ -9,6 +9,14 @@
   Deployed Link: <a href="https://chemical-equipment-parameter-visualizer-1-lmh9.onrender.com/"> https://chemical-equipment-parameter-visualizer-1-lmh9.onrender.com/</a>
 </div>
 
+
+## Screenshots
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/c500087c-08cf-42f2-a7e5-5e698023a8d0" alt="Image 1" width="45%"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="https://github.com/user-attachments/assets/a0e993d0-69f8-4f25-ae81-58322719446b" alt="Image 2" width="45%"/>
+</p>
 ## Project Overview
 
 The Chemical Equipment Parameter Visualizer is a hybrid application that provides both web and desktop interfaces for analyzing and visualizing chemical equipment data. Users can upload CSV files and view summary statistics, charts, historical datasets, and optionally generate PDF reports.
