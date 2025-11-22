@@ -86,7 +86,7 @@ desktop/
 
 This section describes how to run the complete application stack using Docker Compose on your local device. 
 ---
-
+# Web frontend
 ## 1. Prerequisites
 
 * Docker
@@ -136,15 +136,17 @@ http://localhost:5173/
 ```
 
 ---
-## Desktop application
+# Desktop application
 
 To run the dekstop application simply type in the root directory:
 ```bash
 bash dekstop_script.sh
 ```
 
-# 🛠 Manual Setup 
+## 🛠 Manual Setup 
+
 This section explains how to run the backend, web frontend, and desktop application directly on your local machine without using docker container
+
 ---
 
 ## Backend: Django
