@@ -10,15 +10,19 @@ api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem(ACCESS_TOKEN);
 
-    if (token) {
+     const publicRoutes = [
+      "/api/user/register/",
+      "/api/token/", // login
+    ];
+
+   if (!publicRoutes.includes(config.url!) && token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  },
+  (error) => Promise.reject(error)
 );
+
 
 export default api;
