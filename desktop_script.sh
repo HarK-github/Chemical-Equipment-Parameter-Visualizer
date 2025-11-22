@@ -21,7 +21,7 @@ echo "Activating virtual environment..."
 source ./venv/bin/activate
 
 echo "Installing dependencies (if needed)..."
-pip install -r requirements.txt
+pip install -r ./desktop/requirements.txt
 
 echo "Starting Desktop App..."
 python ./desktop/main.py
