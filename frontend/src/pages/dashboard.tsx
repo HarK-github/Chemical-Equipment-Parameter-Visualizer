@@ -144,7 +144,8 @@ export default function Dashboard() {
         >
           <Tab key="upload" title="Upload">
             <div className="flex flex-col items-center gap-4 mt-6 md:mt-10 w-full">
-              <div className="w-full max-w-md flex flex-col items-center px-4 py-6 bg-gray-900 rounded-2xl shadow-md tracking-wide cursor-pointer hover:shadow-xl transition duration-300 border border-gray-200">
+              <label className="w-full max-w-md flex flex-col items-center px-4 py-6 bg-gray-900 rounded-2xl shadow-md tracking-wide cursor-pointer hover:shadow-xl transition duration-300 border border-gray-200">
+                
                 <svg
                   className="w-10 h-10 text-gray-400"
                   fill="none"
@@ -161,19 +162,22 @@ export default function Dashboard() {
                 </svg>
 
                 <span className="mt-2 text-base leading-normal text-gray-500">
-                  <input
-                    accept=".csv"
-                    className="w-full max-w-md"
-                    type="file"
-                    onChange={(e) => setFile(e.target.files?.[0] || null)}
-                  />
+                  Click to upload CSV
                 </span>
-              </div>
+
+                <input
+                  type="file"
+                  accept=".csv"
+                  className="hidden"
+                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                />
+              </label>
 
               <Button className="w-full max-w-md" onPress={uploadCSV}>
                 Upload CSV to Cloud
               </Button>
             </div>
+
 
             <Divider className="my-4 md:my-6" />
             <History history={history} onDelete={deleteCSV} onLoad={loadCSV} />
