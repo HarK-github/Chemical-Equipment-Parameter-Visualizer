@@ -136,6 +136,12 @@ http://localhost:5173/
 ```
 
 ---
+## Desktop application
+
+To run the dekstop application simply type in the root directory:
+```bash
+bash dekstop_script.sh
+```
 
 # 🛠 Manual Setup 
 This section explains how to run the backend, web frontend, and desktop application directly on your local machine without using docker container
@@ -252,9 +258,7 @@ Go to root directory of the project,create and activate a virtual environment
 python -m venv venv
 source venv/bin/activate
 ```
-
-Now run
-
+ 
 
 
 ---
