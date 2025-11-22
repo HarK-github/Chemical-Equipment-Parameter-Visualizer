@@ -162,7 +162,7 @@ export default function Dashboard() {
                 </svg>
 
                 <span className="mt-2 text-base leading-normal text-gray-500">
-                  Click to upload CSV
+                   {file ? "Click below to upload "+file.name + " to cloud" : "Click to upload CSV"} 
                 </span>
 
                 <input
