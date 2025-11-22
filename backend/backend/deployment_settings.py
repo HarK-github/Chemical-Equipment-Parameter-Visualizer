@@ -81,6 +81,9 @@ STORAGES = {
     },
 }
 
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "Authorization",
+]
 # =====================
 # CORS Settings for Production
 # =====================
