@@ -113,9 +113,7 @@ docker compose up --build
 ```
 
 Once all containers are running:
-
-* Web application:
-  `http://localhost/`
+ 
 
 * Backend API (direct):
   `http://127.0.0.1:8000/`
@@ -142,6 +140,10 @@ To run the dekstop application simply type in the root directory:
 ```bash
 bash dekstop_script.sh
 ```
+This will create a virtual environment, run the 
+
+<br>
+---
 
 ## 🛠 Manual Setup 
 
