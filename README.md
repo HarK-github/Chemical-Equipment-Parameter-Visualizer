@@ -122,7 +122,7 @@ Once all containers are running:
   `http://localhost:5173/`
 
 ---
-
+Note : It might take time for containers to spin up.
 
 ## 4. Development Mode 
 
@@ -140,7 +140,7 @@ To run the dekstop application simply type in the root directory:
 ```bash
 bash dekstop_script.sh
 ```
-This will create a virtual environment, run the 
+This will create a virtual environment,spin up the docker ocntainer, run the dekstop app.
 
 <br>
 ---
