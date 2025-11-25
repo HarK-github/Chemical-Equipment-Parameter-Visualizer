@@ -228,7 +228,7 @@ http://localhost:5731/
 ---
 
 ## Desktop Application: PyQt5
-
+### Ensure that the backend is runnign
 ### 1. Navigate to the desktop folder
 
 ```bash
